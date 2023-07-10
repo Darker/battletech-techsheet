@@ -32,6 +32,9 @@ inline constexpr CalcOptions operator|(CalcOptions a, CalcOptions b)
 
 constexpr auto CalcOption_all_to_self = CalcOptions::SELF | CalcOptions::UNDERLYING_TO_SELF;
 constexpr auto CalcOption_self_and_decay = CalcOptions::SELF | CalcOptions::UNDERLYING_DECAY;
+constexpr auto CalcOption_default_add = CalcOptions::NONE;
+constexpr auto CalcOption_default_mult = CalcOptions::NONE;
+constexpr auto CalcOption_default_compare = CalcOptions::SELF;
 
 template<CalcOptions opts>
 inline constexpr bool NumberIsh_underlying_enabled()
@@ -43,12 +46,14 @@ inline constexpr bool NumberIsh_underlying_enabled()
 
 template<typename base_t,
   // this is the type that inherits NumberIsh
-  typename type_t,  
-  CalcOptions add_sub = CalcOptions::NONE,
-  CalcOptions mult = CalcOptions::NONE,
+  typename type_t,
+  // add and subtract
+  CalcOptions add = CalcOption_default_add,
+  // multiply and divide
+  CalcOptions mult = CalcOption_default_mult,
   // == and != are always enabled, size comparison requires SELF
   // comparison with underlying type requires the underlying flag (either one)
-  CalcOptions compare = CalcOptions::SELF,
+  CalcOptions compare = CalcOption_default_compare,
   bool implicit_ctor = false>
 struct NumberIsh
 {
@@ -137,13 +142,13 @@ struct NumberIsh
 
   constexpr WrapperType operator+(WrapperType other) const
   {
-    static_assert(add_sub & CalcOptions::SELF, "Addition with same type not supported");
+    static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
     return WrapperType(value + other.value);
   }
 
   constexpr WrapperType operator-(WrapperType other) const
   {
-    static_assert(add_sub & CalcOptions::SELF, "Substraction with same type not supported");
+    static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
     return WrapperType(value - other.value);
   }
 
@@ -162,9 +167,9 @@ struct NumberIsh
 #pragma endregion
 #pragma region operations with base type
 
-  static constexpr auto underlying_enabled_add = NumberIsh_underlying_enabled<add_sub>();
+  static constexpr auto underlying_enabled_add = NumberIsh_underlying_enabled<add>();
   static constexpr auto underlying_enabled_mult = NumberIsh_underlying_enabled<mult>();
-  using underlying_add_result_t = typename std::conditional < (add_sub& CalcOptions::UNDERLYING_TO_SELF) != 0, WrapperType, base_type >::type;
+  using underlying_add_result_t = typename std::conditional < (add& CalcOptions::UNDERLYING_TO_SELF) != 0, WrapperType, base_type >::type;
   using underlying_mult_result_t = typename std::conditional < (mult& CalcOptions::UNDERLYING_TO_SELF) != 0, WrapperType, base_type >::type;
 
   // operator- really means value * (-1)

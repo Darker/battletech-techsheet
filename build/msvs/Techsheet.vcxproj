@@ -115,6 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\techsheet\Ammo.h" />
     <ClInclude Include="..\..\include\techsheet\compile_defs.h" />
     <ClInclude Include="..\..\include\techsheet\Component.h" />
     <ClInclude Include="..\..\include\techsheet\fixed_str.h" />

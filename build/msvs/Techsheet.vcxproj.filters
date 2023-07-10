@@ -60,6 +60,9 @@
     <ClInclude Include="..\..\include\techsheet\std_cout_printing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\techsheet\Ammo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\test\test_structure_manager.cpp">

@@ -2,7 +2,7 @@
 #include "../include/techsheet/std_cout_printing.h"
 
 #include <iostream>
-
+// g++ -std=c++17 test_structure_manager.cpp -o test.exe
 //using namespace techsheet;
 
 void assert_true(bool cond, const char* message)
@@ -23,10 +23,15 @@ int main()
 
   m.setArmor({ 
           9,
-    10,11,13,11,10,
-      12,12,
-      5,6,5 });
-  m.setInternal({ 3,6,8,11,8,6,8,8 });
+    10, 11,13,11 ,10,
+        12,12,
+        5,6,5 
+   });
+  m.setInternal({ 
+          3,
+    6, 8,11,8, 6,
+         8,8 
+   });
   std::cout << "parts written\n";
 
   const auto doDamage = [&m](Armor part, damage dmg, bool rear = false)

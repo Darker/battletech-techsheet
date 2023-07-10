@@ -1,4 +1,5 @@
 #pragma once
+#include "structure.h"
 
 namespace techsheet
 {
@@ -6,6 +7,7 @@ namespace techsheet
 struct Mech
 {
 
+  StructureManager structure;
 };
 
 }

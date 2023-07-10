@@ -19,6 +19,8 @@ struct Weapon
 
   heat ht_dmg{0};
   byte clusters{1};
+  
+  bool is_rear = false;
 };
 
 }
