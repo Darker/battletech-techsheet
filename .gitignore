@@ -1,0 +1,8 @@
+tmp/
+output/
+.vs/
+*.exe
+*.lib
+*.pdb
+*.obj
+*.vcxproj.user
