@@ -6,3 +6,9 @@ output/
 *.pdb
 *.obj
 *.vcxproj.user
+
+# Vim files
+*.swp
+
+# build files
+build/*
