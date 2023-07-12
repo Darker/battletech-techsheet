@@ -1,4 +1,5 @@
 #pragma once
+#include "is_safe_numeric_cast.h"
 #include "template_defs.h"
 
 #include <initializer_list>
@@ -62,6 +63,8 @@ struct NumberIsh
   using WrapperType = type_t;
   // handy so that inheriting class does not have to repeat all template arguments
   using SelfType = NumberIsh;
+  template <typename TTest>
+  static constexpr bool is_constructible_from = is_safe_numeric_cast_v<base_type, TTest> || std::is_same_v<WrapperType, TTest>;
 
   explicit constexpr NumberIsh(base_type value) : value(value) {}
   explicit constexpr NumberIsh(const WrapperType& value) : value(value.value) 
@@ -144,6 +147,36 @@ struct NumberIsh
   {
     static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
     return WrapperType(value + other.value);
+  }
+
+  constexpr WrapperType& operator++()
+  {
+    static_assert(add & CalcOptions::SELF, "Increment not supported");
+    ++value;
+    return *this;
+  }
+
+  constexpr WrapperType& operator--()
+  {
+    static_assert(add & CalcOptions::SELF, "Decrement not supported");
+    --value;
+    return *this;
+  }
+
+  constexpr WrapperType operator++(int)
+  {
+    static_assert(add & CalcOptions::SELF, "Increment not supported");
+    WrapperType res{ *this };
+    ++value;
+    return res;
+  }
+
+  constexpr WrapperType operator--(int)
+  {
+    static_assert(add & CalcOptions::SELF, "Decrement not supported");
+    WrapperType res{ *this };
+    --value;
+    return res;
   }
 
   constexpr WrapperType operator-(WrapperType other) const

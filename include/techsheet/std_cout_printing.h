@@ -1,9 +1,10 @@
 #pragma once
 #include "structure.h"
+#include "IncomingDamage.h"
 
 #include <iostream>
 
-std::ostream& operator <<(std::ostream& output, techsheet::DamageResult res)
+inline std::ostream& operator <<(std::ostream& output, techsheet::DamageResult res)
 {
   output << "DamageResult{ ";
   if (res.criticalHit)
@@ -22,19 +23,26 @@ std::ostream& operator <<(std::ostream& output, techsheet::DamageResult res)
   return output;
 }
 
-std::ostream& operator <<(std::ostream& output, techsheet::health h)
+inline std::ostream& operator <<(std::ostream& output, const techsheet::IncomingDamage& dmg)
+{
+  const char* rear_txt = dmg.rear ? " (rear)" : "";
+  output << "Damage: " << (short)dmg.dmg.value << " to " << techsheet::armorName(dmg.target) << rear_txt << "\n";
+  return output;
+}
+
+inline std::ostream& operator <<(std::ostream& output, techsheet::health h)
 {
   output << (short)h.value;
   return output;
 }
 
-std::ostream& operator <<(std::ostream& output, techsheet::SegmentHealth health)
+inline std::ostream& operator <<(std::ostream& output, techsheet::SegmentHealth health)
 {
   output << health.current << "/" << health.max;
   return output;
 }
 
-std::ostream& operator <<(std::ostream& output, techsheet::StructureManager::PrintDamage print)
+inline std::ostream& operator <<(std::ostream& output, techsheet::StructureManager::PrintDamage print)
 {
   const auto& m = print.parent;
   output << "BattleMech damage:\n";

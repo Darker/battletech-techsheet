@@ -23,9 +23,11 @@ struct jump_power : NumberIsh<byte, jump_power, CalcOptions::SELF, CalcOption_de
 struct damage : NumberIsh<byte, damage, CalcOptions::SELF, CalcOptions::UNDERLYING_TO_SELF, CalcOption_all_to_self>
 {
   using SelfType::NumberIsh;
+
+  constexpr damage operator*(ammo_count multiplier) const { return damage{ (byte) (value * multiplier.value) }; }
 };
 
-struct heat : NumberIsh<byte, heat, CalcOptions::SELF>
+struct heat : NumberIsh<byte, heat, CalcOptions::SELF, CalcOption_default_mult, CalcOption_all_to_self>
 {
   using SelfType::NumberIsh;
 };
