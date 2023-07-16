@@ -170,8 +170,15 @@ struct StructureManager
       }
       else if (dmg.dmg == 0)
       {
-        res.criticalHit = true;
-        res.criticalSegment = targetSegment;
+        if (internalStatus.destroyed())
+        {
+          res.partDestroyed = true;
+        }
+        else
+        {
+          res.criticalHit = true;
+          res.criticalSegment = targetSegment;
+        }
       }
       else
       {

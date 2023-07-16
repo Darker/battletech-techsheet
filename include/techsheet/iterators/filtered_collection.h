@@ -151,7 +151,7 @@ private:
 };
 
 template <typename TCollection>
-auto make_filtered(TCollection collection, 
+auto make_filtered(TCollection& collection, 
   typename filtered_collection<TCollection>::filter_predicate f1,
   typename filtered_collection<TCollection>::filter_predicate f2 = nullptr,
   typename filtered_collection<TCollection>::filter_predicate f3 = nullptr,
@@ -162,7 +162,7 @@ auto make_filtered(TCollection collection,
 }
 
 template <typename TCollection, typename TParam>
-auto make_filtered(TCollection collection,
+auto make_filtered(TCollection& collection,
   TParam param,
   typename filtered_collection<TCollection, TParam>::filter_predicate f1,
   typename filtered_collection<TCollection, TParam>::filter_predicate f2 = nullptr,

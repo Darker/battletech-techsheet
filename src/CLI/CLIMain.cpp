@@ -259,9 +259,11 @@ void loadMechData(Mech& srcMech, const char* filename)
           ++position;
           continue;
         }
-        const auto lineComp = parseComponent(line);
+        auto lineComp = parseComponent(line);
+        lineComp.first.locations = lineComp.first.locations.offset(position);
+        lineComp.first.position = targetPart;
         mech.addComponent(lineComp);
-        lineComp.first.locations.offset(position);
+        
         skipLines = lineComp.first.locations.slotSize() - 1;
         position += lineComp.first.locations.slotSize();
       }
@@ -341,6 +343,12 @@ int main(int argc, const char** argv)
       else if (command == "status")
       {
         std::cout << mech.structure.doPrintStatusBig() << "\n";
+      }
+      else if (command == "turn")
+      {
+        mech.destroyPendingComponents();
+        mech.reduceHeat();
+        std::cout << "Turn ended" << "\n";
       }
       else if (str::startswith(command, "dmg"))
       {
