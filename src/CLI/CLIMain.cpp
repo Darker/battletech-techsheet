@@ -1,4 +1,5 @@
 #include "string_tools.h"
+#include "is_windows.h"
 
 #include <techsheet/Mech.h>
 #include <techsheet/std_cout_printing.h>
@@ -13,7 +14,9 @@
 #include <string>
 #include <sstream>
 
+#ifdef IS_WINDOWS_BUILD
 #include <Windows.h>
+#endif
 
 using namespace techsheet;
 
@@ -298,12 +301,13 @@ void receiveDamageCommand(Mech& mech, std::string command)
 
 int main(int argc, const char** argv)
 {
+  // windows related settings to allow unicode output to console
+#ifdef IS_WINDOWS_BUILD
   // Set console code page to UTF-8 so console known how to interpret string data
   SetConsoleOutputCP(CP_UTF8);
-
   // Enable buffering to prevent VS from chopping up UTF-8 byte sequences
   setvbuf(stdout, nullptr, _IOFBF, 1000);
-
+#endif
 
   Mech mech;
   if (argc > 1)

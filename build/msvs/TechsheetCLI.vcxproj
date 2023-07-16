@@ -14,6 +14,7 @@
     <ClCompile Include="..\..\src\CLI\CLIMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\CLI\is_windows.h" />
     <ClInclude Include="..\..\src\CLI\string_tools.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
