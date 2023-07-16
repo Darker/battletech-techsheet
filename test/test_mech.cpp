@@ -13,5 +13,10 @@ int main()
   mech.name = "ABCDE";
 
   std::cout << mech.name.c_str() << "\n";
+
+  mech.name += "_123456";
+  std::cout << mech.name.c_str() << "\n";
+  mech.name += mech.name;
+  std::cout << mech.name.c_str() << "\n";
   return 0;
 }

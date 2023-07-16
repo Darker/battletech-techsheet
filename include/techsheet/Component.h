@@ -1,7 +1,7 @@
 #pragma once
 #include "Ammo.h"
 #include "compile_defs.h"
-#include "critical_hits.h"
+#include "CritRange.h"
 #include "fixed_str.h"
 #include "id_defs.h"
 #include "structure_static.h"
@@ -24,22 +24,24 @@ struct Component
     DESTROYED
   };
 
-  enum Special : byte
+  enum class Special : byte
   {
     NOT_SPECIAL,
+    INVALID_COMPONENT, // used to indicate errors when creating or looking up cmps
     LIFE_SUPPORT,
     SENSORS,
     COCKPIT,
     GYRO,
     ENGINE,
-    ACTUATOR_UP,
-    ACTUATOR_LOW,
+    ACTUATOR_BODY, // shoulder/hip
+    ACTUATOR_UP, 
+    ACTUATOR_LOW, // knee/elbow
     ACTUATOR_END // hand/foot
   };
 
-  Internal position;
-  component_id id;
-  component_name name;
+  Internal position = Internal::NUM_SEGMENTS;
+  component_id id{ 0 };
+  //component_name name;
   // critical hit locations as d12 roll
   CritRange locations;
   // damage status
@@ -47,30 +49,38 @@ struct Component
   Special specType = Special::NOT_SPECIAL;
   byte specialHits = 0;
 
-  bool isDestroyed() const
+  constexpr bool isDestroyed() const
   {
     return status == Status::DESTROYED;
+  }
+  constexpr bool isSpecial() const
+  {
+    return specType != Special::NOT_SPECIAL && specType != Special::INVALID_COMPONENT;
+  }
+  constexpr bool isHealthy()
+  {
+    return status == Status::FINE;
   }
 
   void reset()
   {
     status = Status::FINE;
-    ammo = max_ammo;
+    ammo = maxAmmo;
     specialHits = 0;
   }
 
 #pragma region ammunition
   Ammo ammoType = Ammo::NONE;
   ammo_count ammo{ 0 };
-  ammo_count max_ammo{ 0 };
-  damage ammo_damage{ 0 };
+  ammo_count maxAmmo{ 0 };
+  damage ammoDamage{ 0 };
   constexpr bool ammoExplodes() const
   {
     return techsheet::ammoExplodes(ammoType) && ammo > 0;
   }
   constexpr damage ammoExplosionDamage() const
   {
-    return ammo_damage * ammo;
+    return ammoDamage * ammo;
   }
 #pragma endregion
 
@@ -88,6 +98,15 @@ struct Component
     Internal segment = Internal::NUM_SEGMENTS;
     component_id target;
   };
+
+  static constexpr Component createInvalid();
 };
+
+inline constexpr Component Component::createInvalid()
+{
+  Component c;
+  c.specType = Special::INVALID_COMPONENT;
+  return c;
+}
 
 }

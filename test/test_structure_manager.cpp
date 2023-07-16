@@ -57,7 +57,7 @@ int mainddd()
     std::cout << dmg << "\n";
     auto result = m.receiveDamage(dmg);
     std::cout << "Damage result: " << result << "\n";
-    std::cout << m.printDamage << "\n";
+    std::cout << m.doPrintDamage() << "\n";
   };
 
   doDamage(Armor::LA, damage(9));

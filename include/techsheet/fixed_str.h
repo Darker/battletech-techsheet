@@ -1,4 +1,5 @@
 #pragma once
+#include "stl_polyfill.h"
 #include "types.h"
 
 #include <algorithm>
@@ -7,22 +8,17 @@
 #include <string_view>
 #include <type_traits>
 
-#if __cplusplus < 202002L
-namespace std
-{
-inline constexpr bool is_constant_evaluated() { return false; }
-}
-#endif
 
 namespace techsheet
 {
 
-template<size_t length>
+template<size_t max_length_p>
 struct fixed_str final
 {
-  using container = std::array<char, length + 1>;
+  constexpr static auto max_length = max_length_p;
 
-  constexpr static auto max_length = length;
+  using container = std::array<char, max_length + 1>;
+  
   static constexpr const char zero_char = 0;
 
 private:
@@ -35,7 +31,7 @@ private:
     return[&str]<std::size_t... I>(std::index_sequence<I...>)
     {
       return std::array{ (I < N ? str[I] : '\0')... };
-    }(std::make_index_sequence<length + 1>());
+    }(std::make_index_sequence<max_length + 1>());
   }
 #else
 
@@ -48,8 +44,8 @@ private:
   template <std::size_t N>
   static constexpr container to_array(const char(&str)[N]) noexcept
   {
-    static_assert(length >= N, "Cannot fit incoming string.");
-    return to_array(str, std::make_integer_sequence<size_t, length>{});
+    static_assert(max_length >= N, "Cannot fit incoming string.");
+    return to_array(str, std::make_integer_sequence<size_t, max_length>{});
   }
 #endif
 public:
@@ -69,6 +65,60 @@ public:
     return *this;
   }
 
+#pragma region const char* assignment
+private:
+  template<typename char_ptr>
+  using ptr_check_t = std::enable_if_t<std::is_pointer_v<char_ptr>&&
+    std::is_same_v<std::remove_cvref_t<std::remove_pointer_t<char_ptr>>, char>>;
+public:
+
+  template<typename char_ptr,
+    typename = ptr_check_t<char_ptr>>
+  fixed_str(char_ptr str)
+  {
+    std::strncpy(chars.data(), str, max_length);
+    chars[max_length] = '\0';
+  }
+
+  template<typename char_ptr,
+    typename = ptr_check_t<char_ptr>>
+  fixed_str& operator=(char_ptr str)
+  {
+    std::strncpy(chars.data(), str, max_length);
+    chars[max_length] = '\0';
+    return *this;
+  }
+#pragma endregion
+
+  constexpr fixed_str(std::string_view other)
+  {
+    (*this) = other;
+  }
+
+  constexpr fixed_str& operator=(std::string_view other)
+  {
+    const auto otherLen = std::min(other.size(), max_length);
+    if (otherLen > 0)
+    {
+      if (std::is_constant_evaluated())
+      {
+        for (size_t i = 0; i < otherLen; ++i)
+        {
+          chars[i] = other[i];
+        }
+      }
+      else
+      {
+        memcpy(chars.data(), other.data(), otherLen);
+      }
+      chars[otherLen] = '\0';
+    }
+    else
+    {
+      chars[0] = '\0';
+    }
+  }
+
   template<size_t other_length>
   constexpr fixed_str(const fixed_str<other_length>& other)
   {
@@ -78,7 +128,7 @@ public:
   template<size_t other_length>
   constexpr fixed_str& operator=(const fixed_str<other_length>& other)
   {
-    static_assert(length >= other_length, "Cannot fit incoming string.");
+    static_assert(max_length >= other_length, "Cannot fit incoming string.");
 
     if (std::is_constant_evaluated())
     {
@@ -95,7 +145,7 @@ public:
     chars[other_length] = 0;
   }
 
-  std::array<char, length + 1> chars;
+  std::array<char, max_length + 1> chars;
 
   constexpr auto begin() const { return chars.begin(); }
   constexpr auto end() const { return chars.end(); }
@@ -135,9 +185,40 @@ public:
     return str != *this;
   }
 
+  constexpr fixed_str& operator+=(std::string_view str)
+  {
+    const auto inLen = str.length();
+    const auto cpyStart = view().length();
+    const auto maxCpyEnd = std::min(cpyStart + inLen, max_length);
+    const auto cpyLen = maxCpyEnd - cpyStart;
+
+    if (cpyLen > 0)
+    {
+      if (std::is_constant_evaluated())
+      {
+        for (size_t i = cpyStart; i < maxCpyEnd; ++i)
+        {
+          chars[i] = str[i];
+        }
+      }
+      else
+      {
+        memcpy(chars.data() + cpyStart, str.data(), cpyLen);
+      }
+    }
+    return *this;
+  }
+
+  constexpr fixed_str operator+(std::string_view str) const
+  {
+    fixed_str result{ *this };
+    result += str;
+    return result;
+  }
+
   constexpr const char& operator[](size_t index) const 
   {
-    if (index >= length)
+    if (index >= max_length)
     {
       return zero_char;
     }
@@ -150,8 +231,18 @@ public:
   }
 };
 
+// deduction guide
+template<std::size_t N>
+fixed_str(const char(&)[N])->fixed_str<N - 1>; // -1 for null terminator
+
+
 static_assert((fixed_str<8>{"aBLEdsa"}).contains("BLE"), "contains() failed");
 static_assert(!(fixed_str<8>{"aBLEdsa"}).contains("BLA"), "contains() failed");
 static_assert(fixed_str<5>{"aa"} == fixed_str<4>("aa"), "comparison failed");
+static_assert((fixed_str<7>{"abcdef"}) == fixed_str<8>("abcdef"), "compare failed");
+static_assert((fixed_str<6>{"abcde"}) != fixed_str<8>("abcdefg"), "compare failed");
+static_assert((fixed_str<8>{"abcdef"}) != fixed_str<8>("abcdefg"), "compare failed");
 
+// does not compile in MSVS because of debug call on array [] operator
+// static_assert((fixed_str<7>{"abc"} + "def") == fixed_str<7>("abcdef"), "compare or add failed");
 }

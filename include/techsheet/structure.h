@@ -27,6 +27,12 @@ struct SegmentHealth
     auto& health = dmg.staging ? staging : current;
     damage dealt = damage::min_of({ dmg.dmg, damage(health.value) });
     health.value -= dealt.value;
+
+    if (!dmg.staging)
+    {
+      staging = health;
+    }
+
     return dmg.reduce(dealt);
   }
 
@@ -38,6 +44,18 @@ struct SegmentHealth
   constexpr bool destroyed() const
   {
     return current == 0;
+  }
+
+  constexpr void destroy(bool staged = false)
+  {
+    if (staged)
+    {
+      staging = health{ 0 };
+    }
+    else
+    {
+      current = staging = health{ 0 };
+    }
   }
 
   constexpr bool damaged() const
@@ -65,11 +83,6 @@ struct DamageResult
   }
 };
 
-template<typename THealth, typename = std::enable_if_t<health::is_constructible_from<THealth>>>
-using InternalHealth = std::array<THealth, Internal_count>;
-template<typename THealth, typename = std::enable_if_t<health::is_constructible_from<THealth>>>
-using ArmorHealth = std::array<THealth, Armor_count>;
-
 struct StructureManager
 {
   std::array<SegmentHealth, Armor_count> armorHealth;
@@ -91,6 +104,11 @@ struct StructureManager
     {
       internalHealth[i].init((health)values[i]);
     }
+  }
+
+  void setInitialArmor(Armor position, health value)
+  {
+    (*this)[position].init(value);
   }
 
   /*
@@ -186,8 +204,10 @@ struct StructureManager
   }
 
   // used for pretty print operators as a template/overload flag
-  struct PrintDamage { StructureManager& parent; };
-  PrintDamage printDamage{ *this };
+  struct PrintDamage { const StructureManager& parent; };
+  PrintDamage doPrintDamage() const { return{ *this }; }
+  struct PrintStatusBig { const StructureManager& parent; };
+  PrintStatusBig doPrintStatusBig() const { return{ *this }; }
 };
 
 

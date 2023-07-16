@@ -18,7 +18,6 @@ template<auto TVal>
 struct never_happens_v : std::false_type
 {};
 
-
 #pragma region enums
 
 template<typename TEnum>

@@ -8,27 +8,32 @@ namespace techsheet
 namespace pred
 {
 
-bool is_usable(const Component& c)
+constexpr bool is_usable(const Component& c)
 {
   return !c.isDestroyed();
 }
 
-bool is_heatsink(const Component& c)
+constexpr bool is_heatsink(const Component& c)
 {
   return c.heat_removed > 0;
 }
 
-bool is_pending_destruction(const Component& c)
+constexpr bool is_pending_destruction(const Component& c)
 {
   return c.status == Component::Status::LAST_TURN;
 }
 
-bool is_special_hit(const Component& c, Component::Special specialPlace)
+constexpr bool is_special_hit(const Component& c, const Component::Special& specialPlace)
 {
   return c.specType == specialPlace;
 }
 
-bool is_viable_ammo(const Component& c, Ammo ammoType)
+constexpr bool is_part(const Component& c, const Internal& bodyPart)
+{
+  return c.position == bodyPart;
+}
+
+constexpr bool is_viable_ammo(const Component& c, Ammo ammoType)
 {
   return !c.isDestroyed() && c.ammoType == ammoType && c.ammo > 0;
 }

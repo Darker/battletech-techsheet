@@ -64,12 +64,12 @@ constexpr std::array Ammo_names
 static_assert(Ammo_names.size() == to_underlying(Ammo::NO_AMMO_TYPES), "If you add weapon, add it to the names too.");
 constexpr auto Ammo_getName = enumNameLookup<Ammo, Ammo::NO_AMMO_TYPES, &Ammo_names>;
 constexpr auto Ammo_getValue = enumValueLookup<Ammo, Ammo::NO_AMMO_TYPES, &Ammo_names>;
+constexpr auto Ammo_getValueNoOpt = enumValueLookupNoOpt<Ammo, Ammo::NO_AMMO_TYPES, &Ammo_names>;
 
 constexpr bool ammoExplodes(Ammo ammo_type)
 {
   return ammo_type != Ammo::NONE && ammo_type != Ammo::PLASMA;
 }
-
 
 // few enum error checks
 static_assert(Ammo_getValue("AC_10") == Ammo::AC_10, "Do not reorder ammo enum!");
