@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "CritRange.h"
 #include "structure.h"
 #include "IncomingDamage.h"
 
@@ -21,6 +22,14 @@ inline std::ostream& operator <<(std::ostream& output, techsheet::DamageResult r
     output << "mechDestroyed ";
   }
   output << " }";
+  return output;
+}
+
+inline std::ostream& operator <<(std::ostream& output, techsheet::CritRange::PrintAsRolls r)
+{
+  output << std::setfill(' ') << std::setw(2) << (short)r.range.min
+    << " to "
+    << std::setfill(' ') << std::setw(2) << (short)r.range.max;
   return output;
 }
 

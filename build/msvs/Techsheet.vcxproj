@@ -117,6 +117,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\techsheet\compile_defs.h" />
     <ClInclude Include="..\..\include\techsheet\Component.h" />
+    <ClInclude Include="..\..\include\techsheet\critical_hits.h" />
+    <ClInclude Include="..\..\include\techsheet\CritRange.h" />
     <ClInclude Include="..\..\include\techsheet\fixed_str.h" />
     <ClInclude Include="..\..\include\techsheet\IncomingDamage.h" />
     <ClInclude Include="..\..\include\techsheet\iterators\filtered_collection.h" />

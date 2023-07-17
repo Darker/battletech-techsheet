@@ -118,6 +118,10 @@ struct Mech
   {
     return make_filtered(components, segment, &pred::is_part);
   }
+  auto componentsAt(Internal segment) const
+  {
+    return make_filtered(components, segment, &pred::is_part);
+  }
   byte countSpecialHits(Component::Special part) const
   {
     byte count = 0;
@@ -244,6 +248,19 @@ struct Mech
       }
     }
   }
+  
+  std::vector<CritRollOption> getCritOptions(Internal segment) const
+  {
+    std::vector<CritRollOption> result;
+    result.reserve(6);
+    for (const auto& c : componentsAt(segment))
+    {
+      if(c.isHealthy())
+        result.push_back({ c.locations, c.id });
+    }
+    return result;
+  }
+
   /*
   * Marks any pending components as destroyed, to be used at the end of turn.
   * Returns the number of components destroyed

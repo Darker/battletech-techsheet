@@ -57,9 +57,13 @@ struct Component
   {
     return specType != Special::NOT_SPECIAL && specType != Special::INVALID_COMPONENT;
   }
-  constexpr bool isHealthy()
+  constexpr bool isHealthy() const
   {
     return status == Status::FINE;
+  }
+  constexpr bool isValid() const
+  {
+    return position != Internal::NUM_SEGMENTS;
   }
 
   void reset()
@@ -91,13 +95,6 @@ struct Component
 #pragma region jump_jet
   jump_power jump{ 0 };
 #pragma endregion
-
-  struct CritOption
-  {
-    CritRange range;
-    Internal segment = Internal::NUM_SEGMENTS;
-    component_id target;
-  };
 
   static constexpr Component createInvalid();
 };

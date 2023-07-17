@@ -69,6 +69,12 @@
     <ClInclude Include="..\..\include\techsheet\IncomingDamage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\techsheet\critical_hits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\techsheet\CritRange.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\test\test_structure_manager.cpp">

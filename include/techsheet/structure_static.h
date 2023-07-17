@@ -61,10 +61,12 @@ constexpr std::string_view translateSegmentName(std::string_view externalName)
   {
     return "HEAD";
   }
+  // "rear torso left"
   else if (externalName == "RTL")
   {
     return "LTR";
   }
+  // "rear torso center"
   else if (externalName == "RTC")
   {
     return "CTR";
@@ -250,6 +252,15 @@ constexpr InternalHealth<byte> defaultInternalHealth(mass mechMass)
     }
   }
   return struct_data::internalStructureLookupData.back().second;
+}
+
+namespace static_test
+{
+
+static_assert(toInternal(Armor::LA) == Internal::LA, "Error converting from armor to structure");
+static_assert(toInternal(Armor::CTR) == Internal::CT, "Error converting from armor to structure");
+static_assert(toInternal(Armor::HEAD) == Internal::HEAD, "Error converting from armor to structure");
+
 }
 
 }

@@ -80,10 +80,11 @@ std::pair<Component, std::optional<Weapon>> parseComponent(std::string name)
   name = str::tolower(name);
 
   Component result;
+  result.locations = { 1 };
   if (str::contains(name, "laser"))
   {
     Weapon laser;
-    result.locations = { 1 };
+    
     if (str::contains(name, "large"))
     {
       result.locations.max++;
@@ -114,7 +115,6 @@ std::pair<Component, std::optional<Weapon>> parseComponent(std::string name)
   else if (str::contains(name, "flamer"))
   {
     Weapon flamer;
-    result.locations = { 1 };
     flamer.ranges = std::array{ 1, 2, 3, 4 };
     flamer.damagePerCluster = damage{ 2 };
     if (str::contains(name, "(r)"))
@@ -262,6 +262,12 @@ void loadMechData(Mech& srcMech, const char* filename)
         auto lineComp = parseComponent(line);
         lineComp.first.locations = lineComp.first.locations.offset(position);
         lineComp.first.position = targetPart;
+
+        if (!crit::rangeForSegment(targetPart).containsIncl(lineComp.first.locations))
+        {
+          throw std::runtime_error("Component " + line + " for " + valueName + " is at an invalid location.");
+        }
+
         mech.addComponent(lineComp);
         
         skipLines = lineComp.first.locations.slotSize() - 1;
@@ -277,6 +283,44 @@ void receiveDamageCommand(Mech& mech, Armor part, damage dmg, bool rear = false)
 {
   auto res = mech.processDamage({ dmg, part, rear, false });
   std::cout << res << "\n";
+
+  if (res.criticalHit)
+  {
+    bool rollDone = false;
+    const auto options = mech.getCritOptions(res.criticalSegment);
+
+    std::cout << "Roll for critical to "<<res.criticalSegment<<": \n";
+    for (const auto& opt : options)
+    {
+      std::cout << "  " << opt.range.doPrintAsRolls() << " hit\n";
+    }
+    while (!rollDone)
+    {
+      std::cout << "Enter number on the dice: ";
+      std::string line;
+      std::getline(std::cin, line);
+      auto dice = std::stoi(line);
+      if (dice > 12 || dice < 1)
+      {
+        throw std::range_error("Dice roll must be from 1 to 12");
+      }
+      const auto result = mech.receiveCrit(res.criticalSegment, (byte)dice, true);
+      if (result == crit::INVALID_ROLL)
+      {
+        throw std::runtime_error("Invalid roll");
+      }
+      else if (result == crit::ROLL_AGAIN)
+      {
+        std::cout << "Roll again...\n";
+      }
+      else
+      {
+        std::cout << "Component destroyed!\n";
+        rollDone = true;
+      }
+    }
+
+  }
 }
 
 void receiveDamageCommand(Mech& mech, std::string command)

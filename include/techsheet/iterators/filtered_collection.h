@@ -16,8 +16,8 @@ struct filtered_collection
   using collection_t_q = std::remove_reference_t<TCollection>;
   static constexpr bool collection_is_const = std::is_const_v<collection_t_q>;
 
-  using inner_iterator = decltype(TCollection{}.begin());
-  using const_inner_iterator = decltype(TCollection{}.cbegin());
+  using inner_iterator = decltype(collection_t_q{}.begin());
+  using const_inner_iterator = decltype(collection_t_q{}.cbegin());
   using value_type = std::remove_reference_t<decltype(inner_iterator{}.operator*())>;
 
   static constexpr bool no_predicate_param = std::is_same_v<TPredicateParam, unused_filtering_param>;
@@ -29,7 +29,7 @@ struct filtered_collection
 
   template<typename = std::enable_if_t<no_predicate_param>>
   filtered_collection(
-    collection_t_q& collection, 
+    TCollection&& collection,
     filter_predicate f1, 
     filter_predicate f2 = nullptr, 
     filter_predicate f3 = nullptr,
@@ -41,7 +41,7 @@ struct filtered_collection
 
   template<typename = std::enable_if_t<!no_predicate_param>>
   filtered_collection(
-    collection_t_q& collection,
+    TCollection&& collection,
     TPredicateParam param,
     filter_predicate f1,
     filter_predicate f2 = nullptr,
@@ -57,10 +57,11 @@ struct filtered_collection
   //  : collection{ collection }
   //{}
 
-  template<bool is_const_iterator = true>
+  template<bool is_const_iterator_v = true>
   class iterator_impl
   {
   public:
+    static constexpr bool is_const_iterator = is_const_iterator_v;
     //! Decides between const or non const value
     using iterator_spec = typename std::conditional<is_const_iterator, const_inner_iterator, inner_iterator>::type;
     using value_type_spec = decltype(iterator_spec{}.operator*());
@@ -145,13 +146,13 @@ struct filtered_collection
   const_iterator cend() { return const_iterator(collection.cend(), collection.cend(), *this); }
 
 private:
-  collection_t_q& collection;
+  TCollection collection;
   predicates filters{};
   TPredicateParam param{};
 };
 
 template <typename TCollection>
-auto make_filtered(TCollection& collection, 
+auto make_filtered(TCollection&& collection, 
   typename filtered_collection<TCollection>::filter_predicate f1,
   typename filtered_collection<TCollection>::filter_predicate f2 = nullptr,
   typename filtered_collection<TCollection>::filter_predicate f3 = nullptr,
@@ -162,7 +163,7 @@ auto make_filtered(TCollection& collection,
 }
 
 template <typename TCollection, typename TParam>
-auto make_filtered(TCollection& collection,
+auto make_filtered(TCollection&& collection,
   TParam param,
   typename filtered_collection<TCollection, TParam>::filter_predicate f1,
   typename filtered_collection<TCollection, TParam>::filter_predicate f2 = nullptr,

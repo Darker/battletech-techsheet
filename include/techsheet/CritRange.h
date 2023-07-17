@@ -52,6 +52,10 @@ struct CritRange
   {
     return { static_cast<byte>(min + steps), static_cast<byte>(max + steps) };
   }
+
+  // std printing flags
+  struct PrintAsRolls { const CritRange& range; };
+  PrintAsRolls doPrintAsRolls() const { return { *this }; }
 };
 
 // overlap checks
