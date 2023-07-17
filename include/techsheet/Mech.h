@@ -244,13 +244,19 @@ struct Mech
       }
     }
   }
-
-  void destroyPendingComponents()
+  /*
+  * Marks any pending components as destroyed, to be used at the end of turn.
+  * Returns the number of components destroyed
+  */
+  byte destroyPendingComponents()
   {
+    byte destroyed = 0;
     for (auto& c : pendingComponents())
     {
       c.status = Component::Status::DESTROYED;
+      ++destroyed;
     }
+    return destroyed;
   }
 
   /*

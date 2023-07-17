@@ -181,7 +181,7 @@ static constexpr Internal toInternal(Armor const segment)
   {
     return Internal::NUM_SEGMENTS;
   }
-  if (segment > Armor::LL)
+  if (segment > Armor::RL)
   {
     return static_cast<Internal>(static_cast<byte>(segment) - calc_offset);
   }
