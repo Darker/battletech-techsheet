@@ -29,7 +29,7 @@ struct filtered_collection
 
   template<typename = std::enable_if_t<no_predicate_param>>
   filtered_collection(
-    TCollection&& collection,
+    collection_t_q& collection,
     filter_predicate f1, 
     filter_predicate f2 = nullptr, 
     filter_predicate f3 = nullptr,
@@ -41,7 +41,7 @@ struct filtered_collection
 
   template<typename = std::enable_if_t<!no_predicate_param>>
   filtered_collection(
-    TCollection&& collection,
+    collection_t_q& collection,
     TPredicateParam param,
     filter_predicate f1,
     filter_predicate f2 = nullptr,
@@ -146,10 +146,13 @@ struct filtered_collection
   const_iterator cend() { return const_iterator(collection.cend(), collection.cend(), *this); }
 
 private:
-  TCollection collection;
+  collection_t_q& collection;
   predicates filters{};
   TPredicateParam param{};
 };
+
+static_assert(filtered_collection<std::array<int, 4>, unused_filtering_param>::no_predicate_param);
+static_assert(!filtered_collection<std::array<int, 4>, int>::no_predicate_param);
 
 template <typename TCollection>
 auto make_filtered(TCollection&& collection, 

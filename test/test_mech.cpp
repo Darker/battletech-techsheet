@@ -10,13 +10,15 @@ int main()
 {
   using namespace techsheet;
   Mech mech;
-  mech.name = "ABCDE";
+  mech.name = "AB";
 
   std::cout << mech.name.c_str() << "\n";
 
-  mech.name += "_123456";
+  mech.name += "XYZ";
   std::cout << mech.name.c_str() << "\n";
-  mech.name += mech.name;
+  mech.name = fixed_str{ "++" } + mech.name;
   std::cout << mech.name.c_str() << "\n";
+
+
   return 0;
 }

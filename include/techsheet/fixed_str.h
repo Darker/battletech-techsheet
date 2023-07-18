@@ -185,6 +185,16 @@ public:
   {
     return str != *this;
   }
+  template<size_t other_length>
+  static constexpr size_t merge_length = std::max(other_length, max_length);
+  // this is not necessary but it prevents accidental truncation during concatenation
+  template<size_t other_length>
+  constexpr fixed_str<merge_length<other_length>> operator+(fixed_str<other_length> str)
+  {
+    fixed_str<merge_length<other_length>> result{ *this };
+    result += str;
+    return result;
+  }
 
   constexpr fixed_str& operator+=(std::string_view str)
   {
@@ -206,6 +216,7 @@ public:
       {
         memcpy(chars.data() + cpyStart, str.data(), cpyLen);
       }
+      chars[maxCpyEnd] = 0;
     }
     return *this;
   }

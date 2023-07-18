@@ -45,7 +45,7 @@ int maindsa()
 
   std::cout << "\nrvalue test\n";
 
-  for (const auto& v : make_filtered(std::array{1,2,3,4}, & is_odd))
+  for (const auto& v : make_filtered(std::array{1,2,3,4}, &is_odd))
   {
     std::cout << v << ", ";
   }
