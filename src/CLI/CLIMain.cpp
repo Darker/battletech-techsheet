@@ -170,7 +170,6 @@ void loadMechData(Mech& srcMech, const char* filename)
   mech.name += "-";
   mech.name += line;
 
-  int lineIndex = 3;
   while (std::getline(infile, line))
   {
     if (line.empty())
@@ -311,6 +310,10 @@ std::string stringifyComponent(const Mech& mech, const Component& c)
         result += " (rear)";
       }
       return result;
+    }
+    else
+    {
+      throw std::runtime_error("Invalid weapon for component.");
     }
   }
   else
