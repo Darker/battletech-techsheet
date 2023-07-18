@@ -57,16 +57,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(MSBuildThisFileDirectory)..\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
-    <IntDir>$(MSBuildThisFileDirectory)..\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugRun|x64'">
-    <OutDir>$(MSBuildThisFileDirectory)..\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
-    <IntDir>$(MSBuildThisFileDirectory)..\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(MSBuildThisFileDirectory)..\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
-    <IntDir>$(MSBuildThisFileDirectory)..\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -115,8 +115,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\techsheet\Ammo.h" />
     <ClInclude Include="..\..\include\techsheet\compile_defs.h" />
     <ClInclude Include="..\..\include\techsheet\Component.h" />
+    <ClInclude Include="..\..\include\techsheet\component_static.h" />
     <ClInclude Include="..\..\include\techsheet\critical_hits.h" />
     <ClInclude Include="..\..\include\techsheet\CritRange.h" />
     <ClInclude Include="..\..\include\techsheet\fixed_str.h" />

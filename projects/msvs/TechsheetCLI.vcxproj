@@ -52,12 +52,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(MSBuildThisFileDirectory)..\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
-    <IntDir>$(MSBuildThisFileDirectory)..\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(MSBuildThisFileDirectory)..\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
-    <IntDir>$(MSBuildThisFileDirectory)..\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
+    <OutDir>$(MSBuildThisFileDirectory)..\..\build\output\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\..\build\tmp\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
