@@ -26,7 +26,7 @@ private:
   template <std::size_t N>
   static constexpr container to_array(const char(&str)[N]) noexcept
   {
-    static_assert(length >= N, "Cannot fit incoming string.");
+    static_assert(max_length + 1 >= N, "Cannot fit incoming string.");
     // turn the char[N] into a std::array<char, length + 1>
     return[&str]<std::size_t... I>(std::index_sequence<I...>)
     {
@@ -44,7 +44,7 @@ private:
   template <std::size_t N>
   static constexpr container to_array(const char(&str)[N]) noexcept
   {
-    static_assert(max_length >= N, "Cannot fit incoming string.");
+    static_assert(max_length + 1 >= N, "Cannot fit incoming string.");
     return to_array(str, std::make_integer_sequence<size_t, max_length>{});
   }
 #endif
@@ -139,10 +139,11 @@ public:
     }
     else
     {
-      memcpy(chars.data(), other.data(), other_length);
+      memcpy(chars.data(), other.chars.data(), other_length);
     }
 
     chars[other_length] = 0;
+    return *this;
   }
 
   std::array<char, max_length + 1> chars;
@@ -235,7 +236,6 @@ public:
 template<std::size_t N>
 fixed_str(const char(&)[N])->fixed_str<N - 1>; // -1 for null terminator
 
-
 static_assert((fixed_str<8>{"aBLEdsa"}).contains("BLE"), "contains() failed");
 static_assert(!(fixed_str<8>{"aBLEdsa"}).contains("BLA"), "contains() failed");
 static_assert(fixed_str<5>{"aa"} == fixed_str<4>("aa"), "comparison failed");
@@ -243,6 +243,7 @@ static_assert((fixed_str<7>{"abcdef"}) == fixed_str<8>("abcdef"), "compare faile
 static_assert((fixed_str<6>{"abcde"}) != fixed_str<8>("abcdefg"), "compare failed");
 static_assert((fixed_str<8>{"abcdef"}) != fixed_str<8>("abcdefg"), "compare failed");
 
+//static_assert((fixed_str{"ab"}+fixed_str{"c"}).contains("abc"), "compare failed");
 // does not compile in MSVS because of debug call on array [] operator
 // static_assert((fixed_str<7>{"abc"} + "def") == fixed_str<7>("abcdef"), "compare or add failed");
 }

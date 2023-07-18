@@ -1,6 +1,7 @@
 #pragma once
 #include "Ammo.h"
 #include "compile_defs.h"
+#include "component_static.h"
 #include "CritRange.h"
 #include "fixed_str.h"
 #include "id_defs.h"
@@ -24,21 +25,6 @@ struct Component
     DESTROYED
   };
 
-  enum class Special : byte
-  {
-    NOT_SPECIAL,
-    INVALID_COMPONENT, // used to indicate errors when creating or looking up cmps
-    LIFE_SUPPORT,
-    SENSORS,
-    COCKPIT,
-    GYRO,
-    ENGINE,
-    ACTUATOR_BODY, // shoulder/hip
-    ACTUATOR_UP, 
-    ACTUATOR_LOW, // knee/elbow
-    ACTUATOR_END // hand/foot
-  };
-
   Internal position = Internal::NUM_SEGMENTS;
   component_id id{ 0 };
   //component_name name;
@@ -46,8 +32,9 @@ struct Component
   CritRange locations;
   // damage status
   Status status = Status::FINE;
-  Special specType = Special::NOT_SPECIAL;
+  SpecialComponent specType = SpecialComponent::NOT_SPECIAL;
   byte specialHits = 0;
+  bool isWeapon = false;
 
   constexpr bool isDestroyed() const
   {
@@ -55,7 +42,7 @@ struct Component
   }
   constexpr bool isSpecial() const
   {
-    return specType != Special::NOT_SPECIAL && specType != Special::INVALID_COMPONENT;
+    return specType != SpecialComponent::NOT_SPECIAL && specType != SpecialComponent::NO_SPECIAL_TYPES;
   }
   constexpr bool isHealthy() const
   {
@@ -64,6 +51,22 @@ struct Component
   constexpr bool isValid() const
   {
     return position != Internal::NUM_SEGMENTS;
+  }
+  constexpr bool isHeatsink() const
+  {
+    return heat_removed > 0;
+  }
+  constexpr bool isAmmo() const
+  {
+    return ammoType != Ammo::NONE;
+  }
+  constexpr bool isAmmo(Ammo type) const
+  {
+    return ammoType == type;
+  }
+  constexpr bool isJumpJet() const
+  {
+    return jump > 0;
   }
 
   void reset()
@@ -102,7 +105,7 @@ struct Component
 inline constexpr Component Component::createInvalid()
 {
   Component c;
-  c.specType = Special::INVALID_COMPONENT;
+  c.specType = SpecialComponent::NO_SPECIAL_TYPES;
   return c;
 }
 

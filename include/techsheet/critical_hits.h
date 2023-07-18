@@ -1,6 +1,6 @@
 #pragma once
-#include "Component.h"
 #include "CritRange.h"
+#include "component_static.h"
 #include "id_defs.h"
 #include "types.h"
 
@@ -10,7 +10,7 @@ namespace techsheet
 struct CritRollResult final
 {
   component_id destroyedCmp{ 0 };
-  Component::Special specialHit = Component::Special::NOT_SPECIAL;
+  SpecialComponent specialHit = SpecialComponent::NOT_SPECIAL;
   bool rollAgain = false;
 
   bool operator==(const CritRollResult& other) const
@@ -33,8 +33,8 @@ struct CritRollOption final
 
 namespace crit
 {
-constexpr CritRollResult ROLL_AGAIN{ component_id{0}, Component::Special::NOT_SPECIAL, true };
-constexpr CritRollResult INVALID_ROLL{ component_id{0}, Component::Special::INVALID_COMPONENT, true };
+constexpr CritRollResult ROLL_AGAIN{ component_id{0}, SpecialComponent::NOT_SPECIAL, true };
+constexpr CritRollResult INVALID_ROLL{ component_id{0}, SpecialComponent::NO_SPECIAL_TYPES, true };
 
 constexpr CritRange MAX_HEAD_LEG_RANGE{ 1, 6 };
 constexpr CritRange MAX_BODY_RANGE{ 1, 12 };

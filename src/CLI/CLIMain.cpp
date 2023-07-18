@@ -34,43 +34,43 @@ t_strong_num parse_num(const std::string& str)
   return t_strong_num{ static_cast<t_strong_num::base_type>(value) };
 }
 
-std::optional<Component::Special> specialFromName(std::string_view name)
+std::optional<SpecialComponent> specialFromName(std::string_view name)
 {
   if (name == "shoulder" || name == "hip")
   {
-    return Component::Special::ACTUATOR_BODY;
+    return SpecialComponent::ACTUATOR_BODY;
   }
   else if (str::startswith(name, "upper ") && str::endswith(name, " actuator"))
   {
-    return Component::Special::ACTUATOR_UP;
+    return SpecialComponent::ACTUATOR_UP;
   }
   else if (str::startswith(name, "lower ") && str::endswith(name, " actuator"))
   {
-    return Component::Special::ACTUATOR_LOW;
+    return SpecialComponent::ACTUATOR_LOW;
   }
   else if ((str::startswith(name, "foot ") || str::startswith(name, "hand ")) && str::endswith(name, " actuator"))
   {
-    return Component::Special::ACTUATOR_END;
+    return SpecialComponent::ACTUATOR_END;
   }
   else if (name == "cockpit")
   {
-    return Component::Special::COCKPIT;
+    return SpecialComponent::COCKPIT;
   }
   else if (name == "life support")
   {
-    return Component::Special::LIFE_SUPPORT;
+    return SpecialComponent::LIFE_SUPPORT;
   }
   else if (name == "sensors")
   {
-    return Component::Special::SENSORS;
+    return SpecialComponent::SENSORS;
   }
   else if (name == "gyro")
   {
-    return Component::Special::GYRO;
+    return SpecialComponent::GYRO;
   }
   else if (name == "fusion engine")
   {
-    return Component::Special::ENGINE;
+    return SpecialComponent::ENGINE;
   }
   return std::nullopt;
 }
@@ -84,7 +84,7 @@ std::pair<Component, std::optional<Weapon>> parseComponent(std::string name)
   if (str::contains(name, "laser"))
   {
     Weapon laser;
-    
+    laser.name = "LASER";
     if (str::contains(name, "large"))
     {
       result.locations.max++;
@@ -92,22 +92,27 @@ std::pair<Component, std::optional<Weapon>> parseComponent(std::string name)
       laser.damagePerCluster = damage{ 8 };
       laser.heatCaused = heat{ 8 };
       laser.ranges = std::array{ 5, 10, 5, 20 };
+      laser.name = fixed_str{ "L" } + laser.name;
     }
-    if (str::contains(name, "medium"))
+    else if (str::contains(name, "medium"))
     {
       laser.heatCaused = heat{ 3 };
       laser.damagePerCluster = damage{ 5 };
       laser.ranges = std::array{ 3, 6, 9, 12 };
+      laser.name = fixed_str{ "M" } + laser.name;
     }
-    if (str::contains(name, "small"))
+    else if (str::contains(name, "small"))
     {
       laser.heatCaused = heat{ 1 };
       laser.damagePerCluster = damage{ 3 };
       laser.ranges = std::array{ 1,2,3,4 };
+      laser.name = fixed_str{ "S" } + laser.name;
     }
-    if (str::contains(name, "heavy") && !str::contains(name, "small"))
+    if (str::contains(name, "heavy"))
     {
-      result.locations.max++;
+      if(!str::contains(name, "small"))
+        result.locations.max++;
+      laser.name = fixed_str{ "HV_" } + laser.name;
     }
 
     return { result, laser };
@@ -115,6 +120,8 @@ std::pair<Component, std::optional<Weapon>> parseComponent(std::string name)
   else if (str::contains(name, "flamer"))
   {
     Weapon flamer;
+    flamer.name = "FLAMER";
+
     flamer.ranges = std::array{ 1, 2, 3, 4 };
     flamer.damagePerCluster = damage{ 2 };
     if (str::contains(name, "(r)"))
@@ -279,6 +286,39 @@ void loadMechData(Mech& srcMech, const char* filename)
   srcMech = mech;
 }
 
+std::string stringifyComponent(const Mech& mech, const Component& c)
+{
+  if (c.isHeatsink())
+  {
+    return "Heatsink";
+  }
+  else if (c.isAmmo())
+  {
+    return std::string(Ammo_getName(c.ammoType)) + " ammo";
+  }
+  else if (c.isSpecial())
+  {
+    return std::string(SpecialComponent_getName(c.specType));
+  }
+  else if (c.isWeapon)
+  {
+    const auto& w = mech.lookupWeapon(c.id);
+    if (w.component == c.id)
+    {
+      std::string result{ w.name.view() };
+      if (w.isRear)
+      {
+        result += " (rear)";
+      }
+      return result;
+    }
+  }
+  else
+  {
+    return "error";
+  }
+}
+
 void receiveDamageCommand(Mech& mech, Armor part, damage dmg, bool rear = false)
 {
   auto res = mech.processDamage({ dmg, part, rear, false });
@@ -292,7 +332,11 @@ void receiveDamageCommand(Mech& mech, Armor part, damage dmg, bool rear = false)
     std::cout << "Roll for critical to "<<res.criticalSegment<<": \n";
     for (const auto& opt : options)
     {
-      std::cout << "  " << opt.range.doPrintAsRolls() << " hit\n";
+      std::cout << 
+        "  " << opt.range.doPrintAsRolls()
+        << " -> "
+        << stringifyComponent(mech, mech.lookupComponent(opt.component))
+        << "\n";
     }
     while (!rollDone)
     {

@@ -33,6 +33,7 @@ struct Mech
   std::vector<Weapon> weapons;
 
   Component INVALID_COMPONENT = Component::createInvalid();
+  Weapon INVALID_WEAPON{};
 
   void addComponent(Component c)
   {
@@ -43,6 +44,7 @@ struct Mech
   void addComponent(Component c, Weapon w)
   {
     c.id = w.component = componentId.next();
+    c.isWeapon = true;
     components.push_back(c);
     weapons.push_back(w);
   }
@@ -74,6 +76,18 @@ struct Mech
   {
     return std::as_const(const_cast<Mech*>(this)->lookupComponent(id));
   }
+  const Weapon& lookupWeapon(component_id id) const
+  {
+    for (const auto& w : weapons)
+    {
+      if (w.component == id)
+      {
+        return w;
+      }
+    }
+    return INVALID_WEAPON;
+  }
+
 
   void init(InternalHealth<byte> ih, ArmorHealth<byte> ah)
   {
@@ -122,7 +136,7 @@ struct Mech
   {
     return make_filtered(components, segment, &pred::is_part);
   }
-  byte countSpecialHits(Component::Special part) const
+  byte countSpecialHits(SpecialComponent part) const
   {
     byte count = 0;
     for (const auto& comp : make_filtered(components, part, &pred::is_special_hit))
