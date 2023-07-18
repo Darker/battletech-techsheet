@@ -117,6 +117,7 @@ public:
     {
       chars[0] = '\0';
     }
+    return *this;
   }
 
   template<size_t other_length>

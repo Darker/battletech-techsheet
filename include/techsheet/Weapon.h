@@ -47,6 +47,7 @@ struct Weapon
       result.ranges.lng() = range{ 21 };
       result.heatCaused = heat{ 4 };
       break;
+    default:break;
     }
     return result;
   }

@@ -81,8 +81,8 @@ static constexpr Armor toRear(Armor segment)
   case Armor::CT: return Armor::CTR;
   case Armor::RT: return Armor::RTR;
   case Armor::LT: return Armor::LTR;
+  default: return segment;
   }
-  return segment;
 }
 
 static constexpr Armor toArmor(Internal const segment, bool rear = false)
@@ -209,7 +209,7 @@ static constexpr std::optional<Internal> nextSegment(Internal const segment)
   case Internal::NUM_SEGMENTS: return std::nullopt;
   }
   return std::nullopt;
-};
+}
 
 template<typename THealth, typename = std::enable_if_t<health::is_constructible_from<THealth>>>
 using InternalHealth = std::array<THealth, Internal_count>;

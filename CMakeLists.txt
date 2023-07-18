@@ -13,6 +13,12 @@ add_library( techsheet_lib STATIC
 )
 target_include_directories( techsheet_lib PRIVATE include/techsheet INTERFACE include )
 
+if(MSVC)
+  target_compile_options(techsheet_lib PRIVATE /W4)
+else()
+  target_compile_options(techsheet_lib PRIVATE -Wall -Wextra -Wpedantic -Wno-unknown-pragmas)
+endif()
+
 add_executable( techsheet_cli ${sources_cli} )
 target_include_directories( techsheet_cli INTERFACE include )
 target_link_libraries(techsheet_cli PRIVATE techsheet_lib)

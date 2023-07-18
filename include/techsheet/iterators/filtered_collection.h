@@ -18,7 +18,7 @@ struct filtered_collection
 
   using inner_iterator = decltype(collection_t_q{}.begin());
   using const_inner_iterator = decltype(collection_t_q{}.cbegin());
-  using value_type = std::remove_reference_t<decltype(inner_iterator{}.operator*())>;
+  using value_type = std::remove_reference_t<decltype(*(inner_iterator{}))>;
 
   static constexpr bool no_predicate_param = std::is_same_v<TPredicateParam, unused_filtering_param>;
   using filter_predicate_no_param = bool (*)(const value_type&);
@@ -26,8 +26,12 @@ struct filtered_collection
   using filter_predicate = std::conditional_t<no_predicate_param, filter_predicate_no_param, filter_predicate_param>;
   static constexpr auto max_predicates = 4;
   using predicates = std::array<filter_predicate, max_predicates>;
+  
+  // used to prevent inference of enable_if without knowing TCollection
+  template <bool bool_value, typename TDummy>
+  static constexpr bool templated_bool = std::is_same_v<TDummy, TCollection> ? bool_value : !bool_value;
 
-  template<typename = std::enable_if_t<no_predicate_param>>
+  template<typename TDummy = TCollection, typename = std::enable_if_t<templated_bool<no_predicate_param, TDummy>>>
   filtered_collection(
     collection_t_q& collection,
     filter_predicate f1, 
@@ -39,7 +43,7 @@ struct filtered_collection
     , filters{f1, f2, f3, f4}
   { }
 
-  template<typename = std::enable_if_t<!no_predicate_param>>
+  template<typename TDummy = TCollection, typename = std::enable_if_t<templated_bool<!no_predicate_param, TDummy>>>
   filtered_collection(
     collection_t_q& collection,
     TPredicateParam param,
@@ -132,14 +136,14 @@ struct filtered_collection
   using iterator = iterator_impl<false>;
   using const_iterator = iterator_impl<true>;
 
-  template<typename = std::enable_if_t<!collection_is_const>>
+  template<typename TDummy = TCollection, typename = std::enable_if_t<templated_bool<!collection_is_const, TDummy>>>
   iterator begin() { return iterator(collection.begin(), collection.end(), *this); }
-  template<typename = std::enable_if_t<!collection_is_const>>
+  template<typename TDummy = TCollection, typename = std::enable_if_t<templated_bool<!collection_is_const, TDummy>>>
   iterator end() { return iterator(collection.end(), collection.end(), *this); }
 
-  template<typename = std::enable_if_t<collection_is_const>>
+  template<typename TDummy = TCollection, typename = std::enable_if_t<templated_bool<collection_is_const, TDummy>>>
   const_iterator begin() const { return const_iterator(collection.cbegin(), collection.cend(), *this); }
-  template<typename = std::enable_if_t<collection_is_const>>
+  template<typename TDummy = TCollection, typename = std::enable_if_t<templated_bool<collection_is_const, TDummy>>>
   const_iterator end() const { return const_iterator(collection.cend(), collection.cend(), *this); }
 
   const_iterator cbegin() { return const_iterator(collection.cbegin(), collection.cend(), *this); }

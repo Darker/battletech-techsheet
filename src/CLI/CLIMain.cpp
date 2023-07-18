@@ -31,7 +31,7 @@ t_strong_num parse_num(const std::string& str)
   {
     throw std::range_error("Value " + str + " out of range, max is " + std::to_string((int)t_strong_num::max_base_value));
   }
-  return t_strong_num{ static_cast<t_strong_num::base_type>(value) };
+  return t_strong_num::forced_cast(value);
 }
 
 std::optional<SpecialComponent> specialFromName(std::string_view name)

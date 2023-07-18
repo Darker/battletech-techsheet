@@ -18,6 +18,10 @@ template<auto TVal>
 struct never_happens_v : std::false_type
 {};
 
+template<auto TVal>
+struct always_happens_v : std::true_type
+{};
+
 #pragma region enums
 
 template<typename TEnum>
