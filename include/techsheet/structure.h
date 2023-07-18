@@ -1,8 +1,10 @@
 #pragma once
+#include "IncomingDamage.h"
 #include "scalar_defs.h"
 #include "structure_static.h"
 #include "types.h"
 
+#include <algorithm>
 #include <array>
 #include <optional>
 
@@ -11,23 +13,49 @@ namespace techsheet
 
 struct SegmentHealth
 {
-  health max{0};
-  health current{0};
+  health max{ 0 };
+  health current{ 0 };
+  health staging{ 0 };
 
-  void reset() { current = max; }
-  void init(health maxh) { current = max = maxh; }
+
+  void reset() { current = staging = max; }
+  void init(health maxh) { current = staging = max = maxh; }
 
   // Applies damage down to zero, returns damage remaining if health has become zero
-  damage consumeDamage(damage dmg)
+  IncomingDamage consumeDamage(IncomingDamage dmg)
   {
-    damage dealt = damage::min_of({ dmg, damage(current.value) });
-    current.value -= dealt.value;
-    return dmg - dealt;
+    auto& health = dmg.staging ? staging : current;
+    damage dealt = damage::min_of({ dmg.dmg, damage(health.value) });
+    health.value -= dealt.value;
+
+    if (!dmg.staging)
+    {
+      staging = health;
+    }
+
+    return dmg.reduce(dealt);
+  }
+
+  void unstage()
+  {
+    staging = current;
   }
 
   constexpr bool destroyed() const
   {
     return current == 0;
+  }
+
+  constexpr void destroy(bool staged = false)
+  {
+    if (staged)
+    {
+      staging = health{ 0 };
+    }
+    else
+    {
+      current = staging = health{ 0 };
+    }
   }
 
   constexpr bool damaged() const
@@ -60,7 +88,8 @@ struct StructureManager
   std::array<SegmentHealth, Armor_count> armorHealth;
   std::array<SegmentHealth, Internal_count> internalHealth;
 
-  void setArmor(const std::array<byte, Armor_count>& values)
+  template<typename THealth>
+  void setArmor(const ArmorHealth<THealth>& values)
   {
     for (byte i = 0; i < Armor_count; ++i)
     {
@@ -68,7 +97,8 @@ struct StructureManager
     }
   }
 
-  void setInternal(const std::array<byte, Armor_count>& values)
+  template<typename THealth>
+  void setInternal(const InternalHealth<THealth>& values)
   {
     for (byte i = 0; i < Internal_count; ++i)
     {
@@ -76,16 +106,31 @@ struct StructureManager
     }
   }
 
-  DamageResult receiveDamage(Armor segment, damage dmg, bool rear = false)
+  void setInitialArmor(Armor position, health value)
   {
-    // TODO: warning? Rear should be always damaged from the rear
-    rear = rear || isRearSegment(segment);
-    if (rear)
-    {
-      segment = toRear(segment);
-    }
+    (*this)[position].init(value);
+  }
 
-    auto& armorStatus = armorHealth[to_underlying(segment)];
+  /*
+  * Forget any staged damage
+  */
+  void unstage()
+  {
+    const auto unstage = [](SegmentHealth& h) { h.unstage(); };
+    std::for_each(armorHealth.begin(), armorHealth.end(), unstage);
+    std::for_each(internalHealth.begin(), internalHealth.end(), unstage);
+  }
+
+  void reset()
+  {
+    const auto reset = [](SegmentHealth& h) { h.reset(); };
+    std::for_each(armorHealth.begin(), armorHealth.end(), reset);
+    std::for_each(internalHealth.begin(), internalHealth.end(), reset);
+  }
+
+  DamageResult receiveDamage(IncomingDamage dmg)
+  {
+    auto& armorStatus = armorHealth[to_underlying(dmg.target)];
 
     if (!armorStatus.destroyed())
     {
@@ -94,12 +139,12 @@ struct StructureManager
 
     DamageResult res;
 
-    if (dmg == 0)
+    if (dmg.dmg == 0)
     {
       return res;
     }
 
-    const auto handleNext = [rear, &res, this](Internal tgt, damage dmg)
+    const auto handleNext = [&res, this](Internal tgt, IncomingDamage dmg)
     {
       auto nextSeg = nextSegment(tgt);
       if (!nextSeg.has_value())
@@ -108,11 +153,11 @@ struct StructureManager
       }
       else
       {
-        res.mergeIn(receiveDamage(toArmor(nextSeg.value(), rear), dmg, rear));
+        res.mergeIn(receiveDamage(dmg.retarget(nextSeg.value())));
       }
     };
 
-    Internal targetSegment = toInternal(segment);
+    Internal targetSegment = toInternal(dmg.target);
 
     auto& internalStatus = internalHealth[to_underlying(targetSegment)];
     if (!internalStatus.destroyed())
@@ -123,10 +168,17 @@ struct StructureManager
       {
         res.mechDestroyed = true;
       }
-      else if (dmg == 0)
+      else if (dmg.dmg == 0)
       {
-        res.criticalHit = true;
-        res.criticalSegment = targetSegment;
+        if (internalStatus.destroyed())
+        {
+          res.partDestroyed = true;
+        }
+        else
+        {
+          res.criticalHit = true;
+          res.criticalSegment = targetSegment;
+        }
       }
       else
       {
@@ -159,8 +211,10 @@ struct StructureManager
   }
 
   // used for pretty print operators as a template/overload flag
-  struct PrintDamage { StructureManager& parent; };
-  PrintDamage printDamage{ *this };
+  struct PrintDamage { const StructureManager& parent; };
+  PrintDamage doPrintDamage() const { return{ *this }; }
+  struct PrintStatusBig { const StructureManager& parent; };
+  PrintStatusBig doPrintStatusBig() const { return{ *this }; }
 };
 
 

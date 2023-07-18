@@ -1,4 +1,5 @@
 #pragma once
+#include "is_safe_numeric_cast.h"
 #include "template_defs.h"
 
 #include <initializer_list>
@@ -60,8 +61,14 @@ struct NumberIsh
   static_assert(std::is_arithmetic_v<base_t>, "NumberIsh needs a numeric underlying type");
   using base_type = base_t;
   using WrapperType = type_t;
+
+  constexpr static base_type max_base_value = std::numeric_limits<base_type>::max();
+  constexpr static base_type min_base_value = std::numeric_limits<base_type>::min();
+
   // handy so that inheriting class does not have to repeat all template arguments
   using SelfType = NumberIsh;
+  template <typename TTest>
+  static constexpr bool is_constructible_from = is_safe_numeric_cast_v<base_type, TTest> || std::is_same_v<WrapperType, TTest>;
 
   explicit constexpr NumberIsh(base_type value) : value(value) {}
   explicit constexpr NumberIsh(const WrapperType& value) : value(value.value) 
@@ -144,6 +151,50 @@ struct NumberIsh
   {
     static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
     return WrapperType(value + other.value);
+  }
+
+  constexpr WrapperType& operator+=(WrapperType other)
+  {
+    static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
+    value += other.value;
+    return static_cast<WrapperType&>(*this);
+  }
+
+  constexpr WrapperType& operator-=(WrapperType other)
+  {
+    static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
+    value -= other.value;
+    return static_cast<WrapperType&>(*this);
+  }
+
+  constexpr WrapperType& operator++()
+  {
+    static_assert(add & CalcOptions::SELF, "Increment not supported");
+    ++value;
+    return *this;
+  }
+
+  constexpr WrapperType& operator--()
+  {
+    static_assert(add & CalcOptions::SELF, "Decrement not supported");
+    --value;
+    return *this;
+  }
+
+  constexpr WrapperType operator++(int)
+  {
+    static_assert(add & CalcOptions::SELF, "Increment not supported");
+    WrapperType res{ *this };
+    ++value;
+    return res;
+  }
+
+  constexpr WrapperType operator--(int)
+  {
+    static_assert(add & CalcOptions::SELF, "Decrement not supported");
+    WrapperType res{ *this };
+    --value;
+    return res;
   }
 
   constexpr WrapperType operator-(WrapperType other) const
@@ -229,6 +280,26 @@ struct NumberIsh
     return largest;
   }
 #pragma endregion
+#pragma region creation helpers
+  static constexpr WrapperType max_value()
+  { 
+    return WrapperType{ max_base_value };
+  };
+  static constexpr WrapperType min_value()
+  {
+    return WrapperType{ min_base_value };
+  };
+  /*
+  * Forces cast from any numeric type to this value. There are no checks what so ever.
+  */
+  template <typename TSource>
+  static constexpr WrapperType forced_cast(TSource numericValue)
+  {
+    static_assert(std::is_arithmetic_v<TSource>, "forcedCast a numeric source type");
+    return WrapperType{ static_cast<base_type>(numericValue) };
+  }
+#pragma endregion
+
 };
 
 //inline constexpr bool is_

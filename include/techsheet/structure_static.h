@@ -38,29 +38,40 @@ enum class Internal : byte
   NUM_SEGMENTS
 };
 
-constexpr auto ArmorAll = EnumValues<Armor, Armor::NUM_SEGMENTS>;
+constexpr auto Armor_values = EnumValues<Armor, Armor::NUM_SEGMENTS>;
 static constexpr auto Armor_count = to_underlying(Armor::NUM_SEGMENTS);
-constexpr auto InternalAll = EnumValues<Armor, Armor::NUM_SEGMENTS>;
+constexpr auto Internal_values = EnumValues<Internal, Internal::NUM_SEGMENTS>;
 static constexpr auto Internal_count = to_underlying(Internal::NUM_SEGMENTS);
 
-inline constexpr const char* armorName(Armor a)
+constexpr std::array Armor_names{ "HEAD", "LA", "LT", "CT", "RT", "RA", "LL", "RL", "LTR", "CTR", "RTR" };
+constexpr std::array Internal_names{ "HEAD", "LA", "LT", "CT", "RT", "RA", "LL", "RL" };
+
+constexpr auto Armor_getName = enumNameLookup<Armor, Armor::NUM_SEGMENTS, &Armor_names>;
+constexpr auto Armor_getValue = enumValueLookup<Armor, Armor::NUM_SEGMENTS, &Armor_names>;
+constexpr auto Internal_getName = enumNameLookup<Internal, Internal::NUM_SEGMENTS, &Internal_names>;
+constexpr auto Internal_getValue = enumValueLookup<Internal, Internal::NUM_SEGMENTS, &Internal_names>;
+
+/*
+* Hand made lookup for alternative segment shortcuts that still unambiguosly mean something
+* in our segment definitions.
+*/
+constexpr std::string_view translateSegmentName(std::string_view externalName)
 {
-  switch (a)
+  if (externalName == "HD")
   {
-  case Armor::HEAD: return "HEAD";
-  case Armor::LA: return "LA";
-  case Armor::LT: return "LT";
-  case Armor::CT: return "CT";
-  case Armor::RT: return "RT";
-  case Armor::RA: return "RA";
-  case Armor::LL: return "LL";
-  case Armor::RL: return "RL";
-  case Armor::LTR: return "LTR";
-  case Armor::CTR: return "CTR";
-  case Armor::RTR: return "RTR";
-  case Armor::NUM_SEGMENTS: return "invalid-segment";
+    return "HEAD";
   }
-  return "enum-error";
+  // "rear torso left"
+  else if (externalName == "RTL")
+  {
+    return "LTR";
+  }
+  // "rear torso center"
+  else if (externalName == "RTC")
+  {
+    return "CTR";
+  }
+  return externalName;
 }
 
 static constexpr Armor toRear(Armor segment)
@@ -101,24 +112,62 @@ constexpr bool isFatalSegment(Internal segment)
 }
 
 static constexpr Internal toInternal(Armor const segment);
+
 constexpr bool isTorsoSegment(Armor segment)
 {
   return isTorsoSegment(toInternal(segment));
 }
 
-inline constexpr const char* internalName(Internal a)
+constexpr bool isHeadSegment(Armor segment)
 {
-  return armorName(toArmor(a));
+  return segment == Armor::HEAD;
 }
 
-inline constexpr const char* segmentName(Internal a)
+constexpr bool isHeadSegment(Internal segment)
 {
-  return internalName(a);
+  return segment == Internal::HEAD;
 }
 
-inline constexpr const char* segmentName(Armor a)
+constexpr bool isLegSegment(Internal segment)
 {
-  return armorName(a);
+  return segment == Internal::LL ||
+         segment == Internal::RL;
+}
+
+constexpr bool isLegSegment(Armor segment)
+{
+  return isLegSegment(toInternal(segment));
+}
+
+constexpr bool isArmSegment(Internal segment)
+{
+  return segment == Internal::LA ||
+    segment == Internal::RA;
+}
+
+constexpr bool isArmSegment(Armor segment)
+{
+  return isArmSegment(toInternal(segment));
+}
+
+constexpr bool isAppendageSegment(Internal segment)
+{
+  return isArmSegment(segment) || isLegSegment(segment);
+}
+
+constexpr bool isAppendageSegment(Armor segment)
+{
+  return isAppendageSegment(toInternal(segment));
+}
+
+inline constexpr std::string_view segmentName(Internal a)
+{
+  return Internal_getName(a);
+}
+
+inline constexpr std::string_view segmentName(Armor a)
+{
+  return Armor_getName(a);
 }
 
 static constexpr Internal toInternal(Armor const segment)
@@ -134,7 +183,7 @@ static constexpr Internal toInternal(Armor const segment)
   {
     return Internal::NUM_SEGMENTS;
   }
-  if (segment > Armor::LL)
+  if (segment > Armor::RL)
   {
     return static_cast<Internal>(static_cast<byte>(segment) - calc_offset);
   }
@@ -161,5 +210,57 @@ static constexpr std::optional<Internal> nextSegment(Internal const segment)
   }
   return std::nullopt;
 };
+
+template<typename THealth, typename = std::enable_if_t<health::is_constructible_from<THealth>>>
+using InternalHealth = std::array<THealth, Internal_count>;
+template<typename THealth, typename = std::enable_if_t<health::is_constructible_from<THealth>>>
+using ArmorHealth = std::array<THealth, Armor_count>;
+
+// internal structure lookup
+namespace struct_data
+{
+constexpr std::array internalStructureLookupData
+{
+  std::pair{mass{20}, InternalHealth<byte>{3, 3, 5, 6, 5, 3, 4, 4}},
+  std::pair{mass{25}, InternalHealth<byte>{3, 4, 6, 8, 6, 4, 6, 6}},
+  std::pair{mass{30}, InternalHealth<byte>{3, 5, 7, 10, 7, 5, 7, 7}},
+  std::pair{mass{35}, InternalHealth<byte>{3, 6, 8, 11, 8, 6, 8, 8}},
+  std::pair{mass{40}, InternalHealth<byte>{3, 6, 10, 12, 10, 6, 10, 10}},
+  std::pair{mass{45}, InternalHealth<byte>{3, 7, 11, 14, 11, 7, 11, 11}},
+  std::pair{mass{50}, InternalHealth<byte>{3, 8, 12, 16, 12, 8, 12, 12}},
+  std::pair{mass{55}, InternalHealth<byte>{3, 9, 13, 18, 13, 9, 13, 13}},
+  std::pair{mass{60}, InternalHealth<byte>{3, 10, 14, 20, 14, 10, 14, 14}},
+  std::pair{mass{65}, InternalHealth<byte>{3, 10, 15, 21, 15, 10, 15, 15}},
+  std::pair{mass{70}, InternalHealth<byte>{3, 11, 15, 22, 15, 11, 15, 15}},
+  std::pair{mass{75}, InternalHealth<byte>{3, 12, 16, 23, 16, 12, 16, 16}},
+  std::pair{mass{80}, InternalHealth<byte>{3, 13, 17, 25, 17, 13, 17, 17}},
+  std::pair{mass{85}, InternalHealth<byte>{3, 14, 18, 27, 18, 14, 18, 18}},
+  std::pair{mass{90}, InternalHealth<byte>{3, 15, 19, 29, 19, 15, 19, 19}},
+  std::pair{mass{95}, InternalHealth<byte>{3, 16, 20, 30, 20, 16, 20, 20}},
+  std::pair{mass{100}, InternalHealth<byte>{3, 17, 21, 31, 21, 17, 21, 21}},
+};
+
+}
+
+constexpr InternalHealth<byte> defaultInternalHealth(mass mechMass)
+{
+  for (const auto& cfg : struct_data::internalStructureLookupData)
+  {
+    if (cfg.first <= mechMass)
+    {
+      return cfg.second;
+    }
+  }
+  return struct_data::internalStructureLookupData.back().second;
+}
+
+namespace static_test
+{
+
+static_assert(toInternal(Armor::LA) == Internal::LA, "Error converting from armor to structure");
+static_assert(toInternal(Armor::CTR) == Internal::CT, "Error converting from armor to structure");
+static_assert(toInternal(Armor::HEAD) == Internal::HEAD, "Error converting from armor to structure");
+
+}
 
 }

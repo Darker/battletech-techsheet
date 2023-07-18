@@ -1,10 +1,17 @@
 #pragma once
 #include "Ammo.h"
+#include "compile_defs.h"
+#include "component_static.h"
+#include "CritRange.h"
+#include "fixed_str.h"
+#include "id_defs.h"
 #include "structure_static.h"
 #include "scalar_defs.h"
 
 namespace techsheet
 {
+
+using component_name = fixed_str<MAX_LEN_COMPONENT_NAME>;
 
 struct Component
 {
@@ -18,34 +25,69 @@ struct Component
     DESTROYED
   };
 
-  enum Special : byte
-  {
-    NOT_SPECIAL,
-    LIFE_SUPPORT,
-    SENSORS,
-    COCKPIT,
-    GYRO,
-    ENGINE,
-    ACTUATOR_UP,
-    ACTUATOR_LOW,
-    ACTUATOR_END // hand/foot
-  };
-
-  Internal position;
-  damage explosion_damage{ 0 };
+  Internal position = Internal::NUM_SEGMENTS;
+  component_id id{ 0 };
+  //component_name name;
   // critical hit locations as d12 roll
-  byte crit_min;
-  byte crit_max;
+  CritRange locations;
   // damage status
   Status status = Status::FINE;
-  Special spec_type = Special::NOT_SPECIAL;
+  SpecialComponent specType = SpecialComponent::NOT_SPECIAL;
+  byte specialHits = 0;
+  bool isWeapon = false;
+
+  constexpr bool isDestroyed() const
+  {
+    return status == Status::DESTROYED;
+  }
+  constexpr bool isSpecial() const
+  {
+    return specType != SpecialComponent::NOT_SPECIAL && specType != SpecialComponent::NO_SPECIAL_TYPES;
+  }
+  constexpr bool isHealthy() const
+  {
+    return status == Status::FINE;
+  }
+  constexpr bool isValid() const
+  {
+    return position != Internal::NUM_SEGMENTS;
+  }
+  constexpr bool isHeatsink() const
+  {
+    return heat_removed > 0;
+  }
+  constexpr bool isAmmo() const
+  {
+    return ammoType != Ammo::NONE;
+  }
+  constexpr bool isAmmo(Ammo type) const
+  {
+    return ammoType == type;
+  }
+  constexpr bool isJumpJet() const
+  {
+    return jump > 0;
+  }
+
+  void reset()
+  {
+    status = Status::FINE;
+    ammo = maxAmmo;
+    specialHits = 0;
+  }
 
 #pragma region ammunition
-  Ammo ammo_type = Ammo::NONE;
-  ammo_count ammo{0};
+  Ammo ammoType = Ammo::NONE;
+  ammo_count ammo{ 0 };
+  ammo_count maxAmmo{ 0 };
+  damage ammoDamage{ 0 };
   constexpr bool ammoExplodes() const
   {
-    return ammo_type != Ammo::NONE && ammo_type != Ammo::PLASMA;
+    return techsheet::ammoExplodes(ammoType) && ammo > 0;
+  }
+  constexpr damage ammoExplosionDamage() const
+  {
+    return ammoDamage * ammo;
   }
 #pragma endregion
 
@@ -57,6 +99,14 @@ struct Component
   jump_power jump{ 0 };
 #pragma endregion
 
+  static constexpr Component createInvalid();
 };
+
+inline constexpr Component Component::createInvalid()
+{
+  Component c;
+  c.specType = SpecialComponent::NO_SPECIAL_TYPES;
+  return c;
+}
 
 }
