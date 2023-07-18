@@ -8,7 +8,7 @@ namespace str
 static inline std::string tolower(std::string s)
 {
   std::transform(s.begin(), s.end(), s.begin(),
-    [](unsigned char c) { return std::tolower(c); } // correct
+    [](unsigned char c) { return static_cast<char>(std::tolower(c)); } // correct
   );
   return s;
 }
