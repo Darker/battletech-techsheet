@@ -176,12 +176,13 @@ void loadMechData(Mech& srcMech, const char* filename)
   }
   // next two lines are mech name
   mech.name = getline_stripped(infile, linenum) + "-" + getline_stripped(infile, linenum);
-  // skip the next empty line
-  getline_stripped(infile, linenum);
 
   while (!infile.eof())
   {
     const std::string line = getline_stripped(infile, linenum);
+    if (line.empty())
+      continue;
+
     const auto commaPos = line.find(":");
     if (commaPos == std::string::npos)
     {
@@ -459,6 +460,10 @@ int main(int argc, const char** argv)
       {
         std::cout << "Bye.\n";
         return 0;
+      }
+      else
+      {
+        std::cout << "Unknown command '" << command << "'.\n";
       }
     }
     catch (const std::runtime_error& e)
