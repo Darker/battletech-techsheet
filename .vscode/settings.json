@@ -1,0 +1,15 @@
+{
+    "editor.tabSize": 2,
+    "clangd.arguments": [
+        "--compile-commands-dir=build/clangd",
+        "-j=18",
+        "--completion-style=detailed",
+        "--header-insertion=never",
+        "--background-index=1",
+        "--suggest-missing-includes",
+        "--cross-file-rename"
+    ],
+    "cmake.configureSettings": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS":true
+    }
+}

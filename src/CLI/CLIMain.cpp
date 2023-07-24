@@ -395,7 +395,7 @@ void receiveDamageCommand(Mech& mech, std::string command)
 int main(int argc, const char** argv)
 {
   // windows related settings to allow unicode output to console
-#ifdef IS_WINDOWS_BUILD
+#if defined(IS_WINDOWS_BUILD) && defined(_MSC_VER)
   // Set console code page to UTF-8 so console known how to interpret string data
   SetConsoleOutputCP(CP_UTF8);
   // Enable buffering to prevent VS from chopping up UTF-8 byte sequences
