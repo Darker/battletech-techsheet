@@ -12,3 +12,4 @@ output/
 
 # build files
 build/*
+.cache/*

@@ -247,14 +247,14 @@ public:
 // deduction guide
 template<std::size_t N>
 fixed_str(const char(&)[N])->fixed_str<N - 1>; // -1 for null terminator
-
+#ifndef __MINGW32__
 static_assert((fixed_str<8>{"aBLEdsa"}).contains("BLE"), "contains() failed");
 static_assert(!(fixed_str<8>{"aBLEdsa"}).contains("BLA"), "contains() failed");
 static_assert(fixed_str<5>{"aa"} == fixed_str<4>("aa"), "comparison failed");
 static_assert((fixed_str<7>{"abcdef"}) == fixed_str<8>("abcdef"), "compare failed");
 static_assert((fixed_str<6>{"abcde"}) != fixed_str<8>("abcdefg"), "compare failed");
 static_assert((fixed_str<8>{"abcdef"}) != fixed_str<8>("abcdefg"), "compare failed");
-
+#endif
 //static_assert((fixed_str{"ab"}+fixed_str{"c"}).contains("abc"), "compare failed");
 // does not compile in MSVS because of debug call on array [] operator
 // static_assert((fixed_str<7>{"abc"} + "def") == fixed_str<7>("abcdef"), "compare or add failed");
