@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+cmake_policy(SET CMP0074 NEW)
+
 find_package(Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
 
 file(GLOB sources_core_lib "src/lib/**.cpp")
