@@ -160,6 +160,33 @@ struct NumberIsh
     return static_cast<WrapperType&>(*this);
   }
 
+  /*
+  * Safe clamped addition. This will not underflow and always result in max/min possible 
+  * value in cases where the result cannot fit
+  * 
+  * This results in `this + other` operation.
+  */
+  constexpr WrapperType& add_clamp(WrapperType other)
+  {
+    static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
+    // overflow
+    if (other.value > 0 && value > max_base_value - other.value)
+    {
+      value = max_base_value;
+    }
+    // underflow
+    else if (other.value < 0 && value < min_base_value - other.value)
+    {
+      value = min_base_value;
+    }
+    else
+    {
+      value += other.value;
+    }
+    
+    return static_cast<WrapperType&>(*this);
+  }
+
   constexpr WrapperType& operator-=(WrapperType other)
   {
     static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
@@ -201,6 +228,33 @@ struct NumberIsh
   {
     static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
     return WrapperType(value - other.value);
+  }
+
+  /*
+  * Safe clamped addition. This will not underflow and always result in max/min possible
+  * value in cases where the result cannot fit.
+  * 
+  * This results in `this - other` operation.
+  */
+  constexpr WrapperType& substract_clamp(WrapperType other)
+  {
+    static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
+    // overflow
+    if (other.value < 0 && value > max_base_value + other.value)
+    {
+      value = max_base_value;
+    }
+    // underflow
+    else if (other.value > 0 && value < min_base_value + other.value)
+    {
+      value = min_base_value;
+    }
+    else
+    {
+      value += other.value;
+    }
+
+    return static_cast<WrapperType&>(*this);
   }
 
   constexpr WrapperType operator*(WrapperType other) const
