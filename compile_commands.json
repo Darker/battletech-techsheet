@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/matous/git/battletech-techsheet/build",
+  "command": "/usr/bin/c++  -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_SYSTEM_DYN_LINK -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK -I/home/matous/git/battletech-techsheet/include    -std=gnu++17 -o CMakeFiles/test_structure_manager.dir/test/unit/structure_manager.cpp.o -c /home/matous/git/battletech-techsheet/test/unit/structure_manager.cpp",
+  "file": "/home/matous/git/battletech-techsheet/test/unit/structure_manager.cpp"
+},
+{
+  "directory": "/home/matous/git/battletech-techsheet/build",
+  "command": "/usr/bin/c++   -I/home/matous/git/battletech-techsheet/include    -std=gnu++17 -o CMakeFiles/techsheet_cli.dir/src/CLI/CLIMain.cpp.o -c /home/matous/git/battletech-techsheet/src/CLI/CLIMain.cpp",
+  "file": "/home/matous/git/battletech-techsheet/src/CLI/CLIMain.cpp"
+},
+{
+  "directory": "/home/matous/git/battletech-techsheet/build",
+  "command": "/usr/bin/c++   -I/home/matous/git/battletech-techsheet/include/techsheet    -Wall -Wextra -Wpedantic -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/techsheet_lib.dir/src/lib/techsheet_lib.cpp.o -c /home/matous/git/battletech-techsheet/src/lib/techsheet_lib.cpp",
+  "file": "/home/matous/git/battletech-techsheet/src/lib/techsheet_lib.cpp"
+}
+]

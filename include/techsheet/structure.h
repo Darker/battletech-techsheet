@@ -88,6 +88,15 @@ struct StructureManager
   std::array<SegmentHealth, Armor_count> armorHealth;
   std::array<SegmentHealth, Internal_count> internalHealth;
 
+  StructureManager() = default;
+
+  template<typename THealth>
+  StructureManager(const ArmorHealth<THealth>& armor, const InternalHealth<THealth>& internal) 
+  {
+    setArmor(armor);
+    setInternal(internal);
+  }
+
   template<typename THealth>
   void setArmor(const ArmorHealth<THealth>& values)
   {
