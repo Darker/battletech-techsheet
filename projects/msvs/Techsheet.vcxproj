@@ -138,9 +138,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\lib\techsheet_lib.cpp" />
-    <ClCompile Include="..\..\test\test_filtered_collection.cpp" />
-    <ClCompile Include="..\..\test\test_mech.cpp" />
-    <ClCompile Include="..\..\test\test_structure_manager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\test">
-      <UniqueIdentifier>{f1e729ce-9a34-4860-8c53-3e88469d0c76}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\interators">
       <UniqueIdentifier>{2a6c53c6-006e-4f34-8ca3-cff8d63466d2}</UniqueIdentifier>
     </Filter>
@@ -83,17 +80,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\test\test_structure_manager.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\lib\techsheet_lib.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\test_filtered_collection.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\test_mech.cpp">
-      <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
