@@ -1,11 +1,10 @@
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/parameterized_test.hpp>
-
 #include "techsheet/structure.h"
 #include "techsheet/std_cout_printing.h"
 
-#include "techsheet/Ammo.h"
+#include <boost/test/included/unit_test.hpp>
+#include <boost/test/parameterized_test.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 using namespace techsheet;
@@ -72,6 +71,7 @@ void test_damage_no_overflow(const Armor& segment_dmgd)
 
   auto m = m_init;
   const IncomingDamage inc_dmg(damage{damage_val}, segment_dmgd);
+  const auto damaged_structure = toInternal(segment_dmgd);
   m.receiveDamage(inc_dmg);
   std::cout << "Testing damage " << inc_dmg << std::endl;
 
@@ -79,17 +79,30 @@ void test_damage_no_overflow(const Armor& segment_dmgd)
   {
     const bool is_damaged = armor_segment == segment_dmgd;
 
-    const auto armor_pre = m_init[armor_segment].max.value;
-    const auto armor_after = m[armor_segment].current.value;
-    const auto armor_expected = is_damaged ? std::max(static_cast<int>(armor_pre) - damage_val, 0) : static_cast<int>(armor_pre);
-    BOOST_CHECK_EQUAL(armor_after, armor_expected);
-    const auto dmg_internal = std::max(damage_val - static_cast<int>(armor_pre), 0);
+    const damage received{ is_damaged ? (byte)damage_val : (byte)0 };
+
+    const auto armor_pre = m_init[armor_segment].max;
+    const auto armor_after = m[armor_segment].current;
+
+    const auto armor_expected = armor_pre.substract_clamp(health{ received.value });
+
+    BOOST_CHECK_EQUAL(armor_after.value, armor_expected.value);
 
     const auto internal_segment = toInternal(armor_segment);
-    const auto internal_pre = m_init[internal_segment].max.value;
-    const auto internal_after = m[internal_segment].current.value;
-    const auto internal_expected = is_damaged ? static_cast<int>(internal_pre) - dmg_internal : static_cast<int>(internal_pre);
-    BOOST_CHECK_EQUAL(internal_after, internal_expected);
+    // if this internal segment WAS damaged, but not from this armor segment skip the check
+    if (damaged_structure == internal_segment && armor_segment != segment_dmgd)
+    {
+      continue;
+    }
+
+    const auto received_internal = received.substract_clamp(damage{ armor_pre.value });
+
+    const auto internal_pre = m_init[internal_segment].max;
+    const auto internal_after = m[internal_segment].current;
+
+    const auto internal_expected = internal_pre.substract_clamp(health{ received_internal.value });
+
+    BOOST_CHECK_EQUAL(internal_after.value, internal_expected.value);
   }
 }
 
