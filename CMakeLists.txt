@@ -5,6 +5,8 @@ project(battletech-techsheet VERSION 0.1 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_definitions(-g)
+add_definitions(-Og)
 
 cmake_policy(SET CMP0074 NEW)
 
@@ -35,6 +37,15 @@ target_link_libraries(techsheet_cli PRIVATE techsheet_lib)
 add_executable(test_structure_manager test/unit/structure_manager.cpp)
 target_include_directories(test_structure_manager INTERFACE include)
 target_link_libraries(test_structure_manager PRIVATE
+  techsheet_lib
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+  )
+
+add_executable(test_number_ish test/unit/number_ish.cpp)
+target_include_directories(test_number_ish INTERFACE include)
+target_link_libraries(test_number_ish PRIVATE
   techsheet_lib
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}

@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include "is_safe_numeric_cast.h"
 #include "template_defs.h"
 
@@ -169,22 +170,9 @@ struct NumberIsh
   constexpr WrapperType& add_clamp(WrapperType other)
   {
     static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
-    // overflow
-    if (other.value > 0 && value > max_base_value - other.value)
-    {
-      value = max_base_value;
-    }
-    // underflow
-    else if (other.value < 0 && value < min_base_value - other.value)
-    {
-      value = min_base_value;
-    }
-    else
-    {
-      value += other.value;
-    }
-    
-    return static_cast<WrapperType&>(*this);
+    // why is `res` int?
+    const auto res = value + other.value;
+    return WrapperType(std::min(res, static_cast<decltype(res)>(max_base_value)));
   }
 
   constexpr WrapperType& operator-=(WrapperType other)
@@ -236,25 +224,12 @@ struct NumberIsh
   * 
   * This results in `this - other` operation.
   */
-  constexpr WrapperType& substract_clamp(WrapperType other)
+  constexpr WrapperType substract_clamp(WrapperType other) const
   {
     static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
-    // overflow
-    if (other.value < 0 && value > max_base_value + other.value)
-    {
-      value = max_base_value;
-    }
-    // underflow
-    else if (other.value > 0 && value < min_base_value + other.value)
-    {
-      value = min_base_value;
-    }
-    else
-    {
-      value += other.value;
-    }
-
-    return static_cast<WrapperType&>(*this);
+    // why is `res` int?
+    const auto res = value - other.value;
+    return WrapperType(std::max(res, static_cast<decltype(res)>(min_base_value)));
   }
 
   constexpr WrapperType operator*(WrapperType other) const
