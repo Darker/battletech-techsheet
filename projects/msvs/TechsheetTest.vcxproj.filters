@@ -15,13 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\test\unit\structure_manager.cpp">
+    <ClCompile Include="..\..\test\unit\test_structure_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\test\unit\test_fixed_str.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\test\unit\test_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\unit\test_number_ish.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

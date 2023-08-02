@@ -36,18 +36,11 @@ target_link_libraries(techsheet_cli PRIVATE techsheet_lib)
 ## |                            TESTS                           |
 ## --------------------------------------------------------------
 
+file(GLOB sources_core_tests "test/unit/test*.cpp")
+
 add_executable(test_structure_manager test/unit/structure_manager.cpp)
 target_include_directories(test_structure_manager INTERFACE include)
 target_link_libraries(test_structure_manager PRIVATE
-  techsheet_lib
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-  )
-
-add_executable(test_number_ish test/unit/number_ish.cpp)
-target_include_directories(test_number_ish INTERFACE include)
-target_link_libraries(test_number_ish PRIVATE
   techsheet_lib
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}

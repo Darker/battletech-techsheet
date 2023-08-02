@@ -159,7 +159,7 @@ struct NumberIsh
   *
   * This results in `this + other` operation.
   */
-  constexpr WrapperType add_clamp(WrapperType other)
+  constexpr WrapperType add_clamp(WrapperType other) const
   {
     static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
     return WrapperType{ clamped_add(value, other.value) };
@@ -266,7 +266,7 @@ struct NumberIsh
   *
   * This results in `this + other` operation.
   */
-  constexpr underlying_add_result_t add_clamp(base_type other)
+  constexpr underlying_add_result_t add_clamp(base_type other) const
   {
     static_assert(underlying_enabled_add, "Addition with underlying type not supported");
     return underlying_add_result_t{ clamped_add(value, other.value) };

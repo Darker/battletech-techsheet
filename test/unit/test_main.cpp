@@ -1,4 +1,3 @@
-//#define BOOST_TEST_MODULE "Techsheet core library tests"
 #define BOOST_TEST_ALTERNATIVE_INIT_API
 #include <boost/test/included/unit_test.hpp>
 

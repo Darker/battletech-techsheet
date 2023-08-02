@@ -1,7 +1,9 @@
 #include "techsheet/structure.h"
 
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/test/parameterized_test.hpp>
+
+#include "suite_registry.h"
 
 #include <algorithm>
 #include <iostream>
@@ -9,6 +11,8 @@
 using namespace techsheet;
 using namespace boost::unit_test;
 
+namespace techsheet::unit
+{
 template <typename T>
 void test_subtract_clamp(const std::pair<T, T> operands)
 {
@@ -30,9 +34,11 @@ void test_add_clamp(const std::pair<T, T> operands)
   const int expected = std::clamp(unclamped, static_cast<int>(T::min_base_value), static_cast<int>(T::max_base_value));
   BOOST_CHECK_EQUAL(static_cast<int>(result.value), expected);
 }
+}
 
-test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
+static const auto nothing = unit::Registry::add([]()
 {
+  test_suite* ts1 = BOOST_TEST_SUITE("test_number_ish");
   using param_t = health;
   const std::pair<param_t, param_t> params[] = {
     {health{5}, health{5}},
@@ -41,7 +47,21 @@ test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
     {health{3}, health{255}}
   };
 
-  framework::master_test_suite().add(BOOST_PARAM_TEST_CASE(&test_subtract_clamp<param_t>, params, params+4));
+  ts1->add(BOOST_PARAM_TEST_CASE(&unit::test_subtract_clamp<param_t>, params, params + 4));
+  ts1->add(BOOST_PARAM_TEST_CASE(&unit::test_add_clamp<param_t>, params, params + 4));
 
-  return 0;
-}
+  struct signed_test : NumberIsh<char, signed_test, techsheet::CalcOptions::SELF>
+  {
+    using SelfType::NumberIsh;
+  };
+
+  const std::pair<signed_test, signed_test> params_signed[] = {
+    {signed_test{100}, signed_test{100}},
+    {signed_test{-100}, signed_test{-100}},
+    {signed_test{100}, signed_test{-100}},
+    {signed_test{-100}, signed_test{100}},
+  };
+  ts1->add(BOOST_PARAM_TEST_CASE(&unit::test_subtract_clamp<signed_test>, params_signed, params_signed + 4));
+  ts1->add(BOOST_PARAM_TEST_CASE(&unit::test_add_clamp<signed_test>, params_signed, params_signed + 4));
+  return ts1;
+});
