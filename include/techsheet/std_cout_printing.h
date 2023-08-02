@@ -1,10 +1,17 @@
 ﻿#pragma once
 #include "CritRange.h"
+#include "fixed_str.h"
 #include "structure.h"
 #include "IncomingDamage.h"
 
 #include <iomanip>
 #include <iostream>
+
+template <size_t str_max_size>
+inline std::ostream& operator<<(std::ostream& output, const techsheet::fixed_str<str_max_size>& str)
+{
+  output << str.view();
+}
 
 inline std::ostream& operator <<(std::ostream& output, techsheet::DamageResult res)
 {

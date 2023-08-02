@@ -10,6 +10,8 @@ add_definitions(-Og)
 
 cmake_policy(SET CMP0074 NEW)
 
+cmake_policy(SET CMP0074 NEW)
+
 find_package(Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
 
 file(GLOB sources_core_lib "src/lib/**.cpp")

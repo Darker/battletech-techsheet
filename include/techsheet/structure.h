@@ -137,6 +137,11 @@ struct StructureManager
     std::for_each(internalHealth.begin(), internalHealth.end(), reset);
   }
 
+  /*
+  * Calculates how damage spreads through the 'Mech. If you set staging to true,
+  * the damage will be dealt to staging health instead. This is only to be used 
+  * to estimate health lost, not to replay staged damage later.
+  */
   DamageResult receiveDamage(IncomingDamage dmg)
   {
     auto& armorStatus = armorHealth[to_underlying(dmg.target)];

@@ -147,6 +147,19 @@ public:
     return *this;
   }
 
+  template <size_t new_size>
+  constexpr fixed_str<new_size> expand() const
+  {
+    static_assert(new_size >= max_length, "Cannot 'expand' a string to smaller size");
+    return fixed_str<new_size>{*this};
+  }
+
+  template <size_t additional_size>
+  constexpr fixed_str<max_length+additional_size> grow_by() const
+  {
+    return expand<max_length + additional_size>();
+  }
+
   std::array<char, max_length + 1> chars;
 
   constexpr auto begin() const { return chars.begin(); }
@@ -175,6 +188,27 @@ public:
   {
     auto const v = view();
     return v.find(str) != v.npos;
+  }
+
+  constexpr bool startsWith(std::string_view str) const
+  {
+    auto const v = view();
+    return v.find(str) == 0;
+  }
+
+  constexpr bool endsWith(std::string_view str) const
+  {
+    const auto other_len = str.length();
+    if (other_len <= max_length)
+    {
+      auto const v = view();
+      const auto my_len = v.length();
+      if (other_len <= my_len)
+      {
+        return v.find(str) == my_len - other_len;
+      }
+    }
+    return false;
   }
 
   constexpr bool operator==(std::string_view str) const
