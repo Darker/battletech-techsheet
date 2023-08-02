@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include "is_safe_numeric_cast.h"
 #include "template_defs.h"
 
@@ -154,25 +153,23 @@ struct NumberIsh
     return WrapperType(value + other.value);
   }
 
+  /*
+  * Safe clamped addition. This will not underflow and always result in max/min possible
+  * value in cases where the result cannot fit
+  *
+  * This results in `this + other` operation.
+  */
+  constexpr WrapperType add_clamp(WrapperType other) const
+  {
+    static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
+    return WrapperType{ clamped_add(value, other.value) };
+  }
+
   constexpr WrapperType& operator+=(WrapperType other)
   {
     static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
     value += other.value;
     return static_cast<WrapperType&>(*this);
-  }
-
-  /*
-  * Safe clamped addition. This will not underflow and always result in max/min possible 
-  * value in cases where the result cannot fit
-  * 
-  * This results in `this + other` operation.
-  */
-  constexpr WrapperType& add_clamp(WrapperType other)
-  {
-    static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
-    // why is `res` int?
-    const auto res = value + other.value;
-    return WrapperType(std::min(res, static_cast<decltype(res)>(max_base_value)));
   }
 
   constexpr WrapperType& operator-=(WrapperType other)
@@ -219,7 +216,7 @@ struct NumberIsh
   }
 
   /*
-  * Safe clamped addition. This will not underflow and always result in max/min possible
+  * Safe clamped substraction. This will not underflow and always result in max/min possible
   * value in cases where the result cannot fit.
   * 
   * This results in `this - other` operation.
@@ -227,9 +224,7 @@ struct NumberIsh
   constexpr WrapperType substract_clamp(WrapperType other) const
   {
     static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
-    // why is `res` int?
-    const auto res = value - other.value;
-    return WrapperType(std::max(res, static_cast<decltype(res)>(min_base_value)));
+    return WrapperType{ clamped_substract(value, other.value) };
   }
 
   constexpr WrapperType operator*(WrapperType other) const
@@ -265,10 +260,34 @@ struct NumberIsh
     return underlying_add_result_t(value + other.value);
   }
 
+  /*
+  * Safe clamped addition. This will not underflow and always result in max/min possible
+  * value in cases where the result cannot fit
+  *
+  * This results in `this + other` operation.
+  */
+  constexpr underlying_add_result_t add_clamp(base_type other) const
+  {
+    static_assert(underlying_enabled_add, "Addition with underlying type not supported");
+    return underlying_add_result_t{ clamped_add(value, other.value) };
+  }
+
   constexpr underlying_add_result_t operator-(base_type other) const
   {
     static_assert(underlying_enabled_add, "Substraction with underlying type not supported");
     return underlying_add_result_t(value - other.value);
+  }
+
+  /*
+  * Safe clamped substraction. This will not underflow and always result in max/min possible
+  * value in cases where the result cannot fit.
+  *
+  * This results in `this - other` operation.
+  */
+  constexpr underlying_add_result_t substract_clamp(base_type other) const
+  {
+    static_assert(underlying_enabled_add, "Substraction with underlying type not supported");
+    return underlying_add_result_t{ clamped_substract(value, other.value) };
   }
 
   constexpr underlying_mult_result_t operator*(base_type other) const
@@ -329,6 +348,43 @@ struct NumberIsh
   }
 #pragma endregion
 
+#pragma region internal math helpers
+private:
+  static constexpr base_type clamped_add(base_type a, base_type b)
+  {
+    // overflow
+    if (b > 0 && a > max_base_value - b)
+    {
+      return max_base_value;
+    }
+    // underflow
+    else if (b < 0 && a < min_base_value - b)
+    {
+      return min_base_value;
+    }
+    else
+    {
+      return a + b;
+    }
+  }
+  static constexpr base_type clamped_substract(base_type a, base_type b)
+  {
+    // overflow
+    if (b < 0 && a > max_base_value + b)
+    {
+      return max_base_value;
+    }
+    // underflow
+    else if (b > 0 && a < min_base_value + b)
+    {
+      return min_base_value;
+    }
+    else
+    {
+      return a - b;
+    }
+  }
+#pragma endregion
 };
 
 //inline constexpr bool is_

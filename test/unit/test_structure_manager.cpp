@@ -1,8 +1,10 @@
 #include "techsheet/structure.h"
 #include "techsheet/std_cout_printing.h"
 
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/test/parameterized_test.hpp>
+
+#include "suite_registry.h"
 
 #include <algorithm>
 #include <iostream>
@@ -106,12 +108,11 @@ void test_damage_no_overflow(const Armor& segment_dmgd)
   }
 }
 
-test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
+static const auto nothing = unit::Registry::add([]()
 {
+  test_suite* ts1 = BOOST_TEST_SUITE("test_structure_manager");
+  ts1->add(BOOST_PARAM_TEST_CASE(&test_damage_no_internal, std::begin(Armor_values), std::end(Armor_values)));
+  ts1->add(BOOST_PARAM_TEST_CASE(&test_damage_no_overflow, std::begin(Armor_values), std::end(Armor_values)));
+  return ts1;
+});
 
-  framework::master_test_suite().add(BOOST_PARAM_TEST_CASE(&test_damage_no_internal, std::begin(Armor_values), std::end(Armor_values)));
-
-  framework::master_test_suite().add(BOOST_PARAM_TEST_CASE(&test_damage_no_overflow, std::begin(Armor_values), std::end(Armor_values)));
-
-  return 0;
-}
