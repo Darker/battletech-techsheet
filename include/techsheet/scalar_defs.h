@@ -5,39 +5,41 @@
 namespace techsheet
 {
 
-struct range : NumberIsh<byte, range, CalcOptions::SELF, CalcOptions::NONE, CalcOption_all_to_self>
+constexpr auto FLAGS_ADD_SELF_CMP_ALL = NumberIshOpts::defaults().compareUnderlying(true).addSelf(true);
+
+struct range : NumberIsh<byte, range, FLAGS_ADD_SELF_CMP_ALL>
 {
   using SelfType::NumberIsh;
 };
 
-struct ammo_count : NumberIsh<byte, ammo_count, CalcOptions::SELF, CalcOption_default_mult, CalcOption_all_to_self>
+struct ammo_count : NumberIsh<byte, ammo_count, FLAGS_ADD_SELF_CMP_ALL>
 {
   using SelfType::NumberIsh;
 };
 
-struct jump_power : NumberIsh<byte, jump_power, CalcOptions::SELF, CalcOption_default_mult, CalcOption_all_to_self>
+struct jump_power : NumberIsh<byte, jump_power, FLAGS_ADD_SELF_CMP_ALL>
 {
   using SelfType::NumberIsh;
 };
 
-struct damage : NumberIsh<byte, damage, CalcOptions::SELF, CalcOptions::UNDERLYING_TO_SELF, CalcOption_all_to_self>
+struct damage : NumberIsh<byte, damage, FLAGS_ADD_SELF_CMP_ALL>
 {
   using SelfType::NumberIsh;
 
   constexpr damage operator*(ammo_count multiplier) const { return damage{ (byte) (value * multiplier.value) }; }
 };
 
-struct heat : NumberIsh<byte, heat, CalcOptions::SELF, CalcOption_default_mult, CalcOption_all_to_self>
+struct heat : NumberIsh<byte, heat, FLAGS_ADD_SELF_CMP_ALL>
 {
   using SelfType::NumberIsh;
 };
 
-struct health : NumberIsh<byte, health, CalcOptions::SELF, CalcOptions::NONE, CalcOption_all_to_self>
+struct health : NumberIsh<byte, health, FLAGS_ADD_SELF_CMP_ALL>
 {
   using SelfType::NumberIsh;
 };
 
-struct movement_points : NumberIsh<byte, movement_points, CalcOptions::SELF, CalcOptions::NONE, CalcOption_all_to_self>
+struct movement_points : NumberIsh<byte, movement_points, FLAGS_ADD_SELF_CMP_ALL>
 {
   using SelfType::NumberIsh;
 };
@@ -45,7 +47,7 @@ struct movement_points : NumberIsh<byte, movement_points, CalcOptions::SELF, Cal
 /*
 * Mass is in tonnes
 */
-struct mass : NumberIsh<unsigned int, mass, CalcOptions::SELF, CalcOptions::NONE, CalcOptions::SELF>
+struct mass : NumberIsh<unsigned int, mass, NumberIshOpts::defaults().addSelf(true).compareUnderlying(true)>
 {
   using SelfType::NumberIsh;
 };
@@ -55,7 +57,8 @@ constexpr mass operator""_tonnes(unsigned long long wgt)
   return mass{ static_cast<mass::base_type>(wgt) };
 }
 
-struct dice_roll : NumberIsh<byte, dice_roll, CalcOption_all_to_self, CalcOptions::NONE, CalcOption_all_to_self>
+
+struct dice_roll : NumberIsh<byte, dice_roll, NumberIshOpts::none().addEitherToSelf(true).compareEither(true) >
 {
   using SelfType::NumberIsh;
 

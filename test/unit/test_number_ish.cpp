@@ -50,7 +50,7 @@ static const auto nothing = unit::Registry::add([]()
   ts1->add(BOOST_PARAM_TEST_CASE(&unit::test_subtract_clamp<param_t>, params, params + 4));
   ts1->add(BOOST_PARAM_TEST_CASE(&unit::test_add_clamp<param_t>, params, params + 4));
 
-  struct signed_test : NumberIsh<char, signed_test, techsheet::CalcOptions::SELF>
+  struct signed_test : NumberIsh<char, signed_test, NumberIshOpts::defaults().addSelf(true)>
   {
     using SelfType::NumberIsh;
   };
