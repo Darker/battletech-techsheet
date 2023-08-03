@@ -10,58 +10,184 @@
 namespace techsheet
 {
 
-using CalcOptions_t = unsigned char;
-enum class CalcOptions : CalcOptions_t
+struct NumberIshOpts final
 {
-  NONE = 0,
-  SELF = 0b100, // can perform calculation on self (return self type)
-  UNDERLYING_TO_SELF = 0b010,  // can perform calculation on the underlying type (return self type)
-  UNDERLYING_DECAY = 0b001    // can perform calculation with underlaying, but converts to underlying
+  using option_t = unsigned short;
+  enum class Opt : option_t
+  {
+    NO_OPT = 0,
+    ALL_OPTS = 0xFFFF,
+    ADD_SELF = 1,
+    ADD_UNDERLYING = 2,
+    ADD_UNDERLYING_CREATES_SELF = 4,
+    MULTIPLY_SELF = 8,
+    MULTIPLY_UNDERLYING = 16,
+    MULTIPLY_UNDERLYING_CREATES_SELF = 32,
+    COMPARE_SELF = 64,
+    COMPARE_UNDERLYING = 128,
+    DEFAULT_CTOR = 256
+  };
+
+  /*
+  * What is the result of an operation with the undrelying type?
+  * 
+  * Self means it returns instance of the NumberIsh implementing class,
+  * INNER means it returns the inner/underlying type
+  */
+  enum class OpWithInner
+  {
+    DISABLED = 0,
+    CREATES_UNDERLYING = 1,
+    CREATES_SELF = 2
+  };
+
+  constexpr NumberIshOpts(Opt o) : opts{ o } {}
+
+  Opt opts;
+
+  constexpr NumberIshOpts addSelf(bool status) const
+  {
+    return setOpt(Opt::ADD_SELF, status);
+  }
+
+  constexpr NumberIshOpts addUnderlying(OpWithInner mode) const
+  {
+    return setUnderlyingOpt(Opt::ADD_UNDERLYING, mode);
+  }
+
+  constexpr NumberIshOpts addEither(bool status) const
+  {
+    return setOpt(Opt::ADD_SELF, status)
+      .setOpt(Opt::ADD_SELF, status)
+      .setOpt(Opt::ADD_UNDERLYING_CREATES_SELF, false);
+  }
+
+  constexpr NumberIshOpts addEitherToSelf(bool status) const
+  {
+    return setOpt(Opt::ADD_SELF, status)
+      .setOpt(Opt::ADD_SELF, status)
+      .setOpt(Opt::ADD_UNDERLYING_CREATES_SELF, status);
+  }
+
+  constexpr NumberIshOpts multiplySelf(bool status) const
+  {
+    return setOpt(Opt::MULTIPLY_SELF, status);
+  }
+
+  constexpr NumberIshOpts multiplyUnderlying(OpWithInner mode) const
+  {
+    return setUnderlyingOpt(Opt::MULTIPLY_UNDERLYING, mode);
+  }
+
+  constexpr NumberIshOpts compareSelf(bool status) const
+  {
+    return setOpt(Opt::COMPARE_SELF, status);
+  }
+
+  constexpr NumberIshOpts compareUnderlying(bool status) const
+  {
+    return setOpt(Opt::COMPARE_UNDERLYING, status);
+  }
+
+  constexpr NumberIshOpts compareEither(bool status) const
+  {
+    return compareSelf(status).compareUnderlying(status);
+  }
+  /*
+  * Set this to true if you want default ctor generated
+  */
+  constexpr NumberIshOpts defCtor(bool status) const
+  {
+    return setOpt(Opt::DEFAULT_CTOR, status);
+  }
+
+  constexpr bool hasOpt(NumberIshOpts opt) const
+  {
+    return (*this & opt) != Opt::NO_OPT;
+  }
+
+  constexpr bool canAddSelf() const { return hasOpt(Opt::ADD_SELF); }
+  constexpr bool canAddUnderlying() const { return hasOpt(Opt::ADD_UNDERLYING); }
+  constexpr bool canMultiplySelf() const { return hasOpt(Opt::MULTIPLY_SELF); }
+  constexpr bool canMultiplyUnderlying() const { return hasOpt(Opt::MULTIPLY_UNDERLYING); }
+  constexpr bool canCompareSelf() const { return hasOpt(Opt::COMPARE_SELF); }
+  constexpr bool canCompareUnderlying() const { return hasOpt(Opt::COMPARE_UNDERLYING); }
+
+  constexpr static NumberIshOpts defaults()
+  {
+    return Opt::COMPARE_SELF;
+  }
+
+  constexpr static NumberIshOpts none()
+  {
+    return Opt::NO_OPT;
+  }
+
+  constexpr operator Opt() const { return opts; }
+
+  constexpr NumberIshOpts operator|(const NumberIshOpts other) const
+  {
+    return mergeOpts(opts, other.opts);
+  }
+
+  constexpr static NumberIshOpts mergeOpts(Opt a, Opt b)
+  {
+    return NumberIshOpts{ static_cast<option_t>(static_cast<option_t>(a) | static_cast<option_t>(b)) };
+  }
+
+private:
+
+  explicit constexpr NumberIshOpts(option_t val) : opts{ static_cast<Opt>(val) } {}
+
+  constexpr NumberIshOpts operator&(const NumberIshOpts other) const
+  {
+    return NumberIshOpts{ static_cast<option_t>(static_cast<option_t>(opts) & static_cast<option_t>(other.opts)) };
+  }
+
+  constexpr NumberIshOpts setOpt(Opt opt, bool state) const
+  {
+    if (state)
+    {
+      return *this | NumberIshOpts(opt);
+    }
+    else
+    {
+      return *this & NumberIshOpts(~static_cast<option_t>(opt));
+    }
+  }
+  constexpr NumberIshOpts setUnderlyingOpt(Opt operation, OpWithInner mode) const
+  {
+    Opt result_opt = Opt::NO_OPT;
+    switch (operation)
+    {
+    case Opt::ADD_UNDERLYING: result_opt = Opt::ADD_UNDERLYING_CREATES_SELF; break;
+    case Opt::MULTIPLY_UNDERLYING: result_opt = Opt::MULTIPLY_UNDERLYING_CREATES_SELF; break;
+    default: mode = OpWithInner::DISABLED; operation = Opt::NO_OPT;
+    }
+    const bool status = mode != OpWithInner::DISABLED;
+    if (status)
+    {
+      return setOpt(operation, true).setOpt(result_opt, mode == OpWithInner::CREATES_SELF);
+    }
+    else
+    {
+      return setOpt(operation, false).setOpt(result_opt, false);
+    }
+  }
 };
-
-// Since & is used for testing it makes little sense to cast back to enum
-inline constexpr CalcOptions_t operator&(CalcOptions a, CalcOptions b)
-{
-  return static_cast<CalcOptions_t>(a) & static_cast<CalcOptions_t>(b);
-}
-
-// Used to merge multiple options together
-inline constexpr CalcOptions operator|(CalcOptions a, CalcOptions b)
-{
-  return static_cast<CalcOptions>(static_cast<CalcOptions_t>(a) | static_cast<CalcOptions_t>(b));
-}
-
-constexpr auto CalcOption_all_to_self = CalcOptions::SELF | CalcOptions::UNDERLYING_TO_SELF;
-constexpr auto CalcOption_self_and_decay = CalcOptions::SELF | CalcOptions::UNDERLYING_DECAY;
-constexpr auto CalcOption_default_add = CalcOptions::NONE;
-constexpr auto CalcOption_default_mult = CalcOptions::NONE;
-constexpr auto CalcOption_default_compare = CalcOptions::SELF;
-
-template<CalcOptions opts>
-inline constexpr bool NumberIsh_underlying_enabled()
-{
-  constexpr auto both = CalcOptions::UNDERLYING_DECAY | CalcOptions::UNDERLYING_TO_SELF;
-  static_assert((opts & both) != to_underlying(both), "NumberIsh UNDERLYING options are mutually exclusive");
-  return (opts & both) != 0;
-}
 
 template<typename base_t,
   // this is the type that inherits NumberIsh
   typename type_t,
-  // add and subtract
-  CalcOptions add = CalcOption_default_add,
-  // multiply and divide
-  CalcOptions mult = CalcOption_default_mult,
-  // == and != are always enabled, size comparison requires SELF
-  // comparison with underlying type requires the underlying flag (either one)
-  CalcOptions compare = CalcOption_default_compare,
-  bool implicit_ctor = false>
+  // flags
+  NumberIshOpts::Opt flags_v>
 struct NumberIsh
 {
   static_assert(std::is_arithmetic_v<base_t>, "NumberIsh needs a numeric underlying type");
   using base_type = base_t;
   using WrapperType = type_t;
 
+  constexpr static NumberIshOpts flags{ flags_v };
   constexpr static base_type max_base_value = std::numeric_limits<base_type>::max();
   constexpr static base_type min_base_value = std::numeric_limits<base_type>::min();
 
@@ -75,7 +201,7 @@ struct NumberIsh
   {
     static_assert(std::is_base_of_v<NumberIsh, WrapperType>, "Must provide struct that inherits NumberIsh");
   }
-  constexpr NumberIsh() : value{} { static_assert(implicit_ctor, "NumberIsh implicit ctor must be explicitly enabled"); }
+  constexpr NumberIsh() : value{} { static_assert(flags.hasOpt(NumberIshOpts::Opt::DEFAULT_CTOR), "NumberIsh implicit ctor must be explicitly enabled"); }
   // explicit conversion is allowed
   explicit constexpr operator base_type() const
   {
@@ -96,12 +222,12 @@ struct NumberIsh
 
   constexpr bool operator>(WrapperType other) const
   {
-    static_assert(compare & CalcOptions::SELF, "Size comparison with same type not supported");
+    static_assert(flags.canCompareSelf(), "Size comparison with same type not supported");
     return value > other.value;
   }
   constexpr bool operator<(WrapperType other) const
   {
-    static_assert(compare & CalcOptions::SELF, "Size comparison with same type not supported");
+    static_assert(flags.canCompareSelf(), "Size comparison with same type not supported");
     return value < other.value;
   }
   constexpr bool operator>=(WrapperType other) const
@@ -114,7 +240,7 @@ struct NumberIsh
   }
 #pragma endregion
 #pragma region base type comparison
-  static constexpr auto base_comparison_enabled = NumberIsh_underlying_enabled<compare>();
+  static constexpr auto base_comparison_enabled = flags.canCompareUnderlying();
   constexpr bool operator==(base_type other) const
   {
     static_assert(base_comparison_enabled, "Cannot compare with underlying type");
@@ -149,7 +275,7 @@ struct NumberIsh
 
   constexpr WrapperType operator+(WrapperType other) const
   {
-    static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
+    static_assert(flags.canAddSelf(), "Addition with same type not supported");
     return WrapperType(value + other.value);
   }
 
@@ -161,41 +287,41 @@ struct NumberIsh
   */
   constexpr WrapperType add_clamp(WrapperType other) const
   {
-    static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
+    static_assert(flags.canAddSelf(), "Addition with same type not supported");
     return WrapperType{ clamped_add(value, other.value) };
   }
 
   constexpr WrapperType& operator+=(WrapperType other)
   {
-    static_assert(add & CalcOptions::SELF, "Addition with same type not supported");
+    static_assert(flags.canAddSelf(), "Addition with same type not supported");
     value += other.value;
     return static_cast<WrapperType&>(*this);
   }
 
   constexpr WrapperType& operator-=(WrapperType other)
   {
-    static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
+    static_assert(flags.canAddSelf(), "Substraction with same type not supported");
     value -= other.value;
     return static_cast<WrapperType&>(*this);
   }
 
   constexpr WrapperType& operator++()
   {
-    static_assert(add & CalcOptions::SELF, "Increment not supported");
+    static_assert(flags.canAddSelf(), "Increment not supported");
     ++value;
     return *this;
   }
 
   constexpr WrapperType& operator--()
   {
-    static_assert(add & CalcOptions::SELF, "Decrement not supported");
+    static_assert(flags.canAddSelf(), "Decrement not supported");
     --value;
     return *this;
   }
 
   constexpr WrapperType operator++(int)
   {
-    static_assert(add & CalcOptions::SELF, "Increment not supported");
+    static_assert(flags.canAddSelf(), "Increment not supported");
     WrapperType res{ *this };
     ++value;
     return res;
@@ -203,7 +329,7 @@ struct NumberIsh
 
   constexpr WrapperType operator--(int)
   {
-    static_assert(add & CalcOptions::SELF, "Decrement not supported");
+    static_assert(flags.canAddSelf(), "Decrement not supported");
     WrapperType res{ *this };
     --value;
     return res;
@@ -211,7 +337,7 @@ struct NumberIsh
 
   constexpr WrapperType operator-(WrapperType other) const
   {
-    static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
+    static_assert(flags.canAddSelf(), "Substraction with same type not supported");
     return WrapperType(value - other.value);
   }
 
@@ -223,29 +349,35 @@ struct NumberIsh
   */
   constexpr WrapperType substract_clamp(WrapperType other) const
   {
-    static_assert(add & CalcOptions::SELF, "Substraction with same type not supported");
+    static_assert(flags.canAddSelf(), "Substraction with same type not supported");
     return WrapperType{ clamped_substract(value, other.value) };
   }
 
   constexpr WrapperType operator*(WrapperType other) const
   {
-    static_assert(mult & CalcOptions::SELF, "Multiplication with same type not supported");
+    static_assert(flags.canMultiplySelf(), "Multiplication with same type not supported");
     return WrapperType(value * other.value);
   }
 
   constexpr WrapperType operator/(WrapperType other) const
   {
-    static_assert(mult & CalcOptions::SELF, "Division with same type not supported");
+    static_assert(flags.canMultiplySelf(), "Division with same type not supported");
     return WrapperType(value / other.value);
   }
 
 #pragma endregion
 #pragma region operations with base type
 
-  static constexpr auto underlying_enabled_add = NumberIsh_underlying_enabled<add>();
-  static constexpr auto underlying_enabled_mult = NumberIsh_underlying_enabled<mult>();
-  using underlying_add_result_t = typename std::conditional < (add& CalcOptions::UNDERLYING_TO_SELF) != 0, WrapperType, base_type >::type;
-  using underlying_mult_result_t = typename std::conditional < (mult& CalcOptions::UNDERLYING_TO_SELF) != 0, WrapperType, base_type >::type;
+  static constexpr auto underlying_enabled_add = flags.canAddUnderlying();
+  static constexpr auto underlying_enabled_mult = flags.canMultiplyUnderlying();
+  using underlying_add_result_t = 
+    typename std::conditional < 
+      flags.hasOpt(NumberIshOpts::Opt::ADD_UNDERLYING_CREATES_SELF), WrapperType, base_type 
+    >::type;
+  using underlying_mult_result_t = 
+    typename std::conditional < 
+    flags.hasOpt(NumberIshOpts::Opt::MULTIPLY_UNDERLYING_CREATES_SELF), WrapperType, base_type
+    >::type;
 
   // operator- really means value * (-1)
   constexpr underlying_mult_result_t operator-() const

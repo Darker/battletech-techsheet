@@ -11,6 +11,7 @@ template <size_t str_max_size>
 inline std::ostream& operator<<(std::ostream& output, const techsheet::fixed_str<str_max_size>& str)
 {
   output << str.view();
+  return output;
 }
 
 inline std::ostream& operator <<(std::ostream& output, techsheet::DamageResult res)
