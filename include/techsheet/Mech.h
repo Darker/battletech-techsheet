@@ -6,6 +6,7 @@
 #include "id_defs.h"
 #include "structure.h"
 #include "Weapon.h"
+#include "WeaponComponent.h"
 
 #include "iterators/filtered_collection.h"
 
@@ -21,6 +22,8 @@ using mech_name = fixed_str<MAX_LEN_MECH_NAME>;
 
 struct Mech
 {
+  static constexpr damage PSR_DAMAGE_LIMIT{ 20 };
+
   mech_name name;
   StructureManager structure;
   heat currentHeat{ 0 };
@@ -28,6 +31,7 @@ struct Mech
   bool doubleHeatSinks = false;
   unsigned short engineRating = 0;
   mass wgt{ 0 };
+  damage damageThisTurn{ 0 };
 
   std::vector<Component> components;
   std::vector<Weapon> weapons;
@@ -49,7 +53,7 @@ struct Mech
     weapons.push_back(w);
   }
 
-  void addComponent(std::pair<Component, std::optional<Weapon>> p)
+  void addComponent(WeaponComponent p)
   {
     if (p.second.has_value())
     {
@@ -87,7 +91,6 @@ struct Mech
     }
     return INVALID_WEAPON;
   }
-
 
   void init(InternalHealth<byte> ih, ArmorHealth<byte> ah)
   {
@@ -136,6 +139,8 @@ struct Mech
   {
     return make_filtered(components, segment, &pred::is_part);
   }
+#pragma endregion
+
   byte countSpecialHits(SpecialComponent part) const
   {
     byte count = 0;
@@ -161,7 +166,6 @@ struct Mech
     heat power = heatSinkCount();
     return doubleHeatSinks ? heat::forced_cast(2 * power.value) : power;
   }
-#pragma endregion
 
   DamageResult processDamage(IncomingDamage dmg)
   {
@@ -200,15 +204,30 @@ struct Mech
           c.status = Component::Status::LAST_TURN;
         }
       }
+
+      damageThisTurn += dmg.dmg;
+
+      if (damageRequiresPSR())
+      {
+        result.psrRequired = true;
+      }
+
       return result;
     }
     return DamageResult{};
   }
 
   /*
+  * Returns true if aggregate damage this turn requires piloting skill roll
+  */
+  bool damageRequiresPSR() const
+  {
+    return damageThisTurn >= PSR_DAMAGE_LIMIT;
+  }
+  /*
   * Finds what component would be hit and if it is a special hit.
   * The critPos should directly be the dice number, starting at 1 ending at 6 or 12
-  * \param execute should be set to false if you want the info but no effect on Mech'
+  * \param execute should be set to false if you want the info but no effect on 'Mech
   */
   CritRollResult receiveCrit(Internal segment, byte critPos, bool execute)
   {

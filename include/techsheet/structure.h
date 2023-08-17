@@ -70,6 +70,8 @@ struct DamageResult
   Internal criticalSegment = Internal::NUM_SEGMENTS;
   bool mechDestroyed = false;
   bool partDestroyed = false;
+  // This is only set for non-staging damage and hints that aggregate damage exceeded PSR roll requirement
+  bool psrRequired = false;
 
   void mergeIn(DamageResult other)
   {

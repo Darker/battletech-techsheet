@@ -13,6 +13,14 @@ using weapon_name = fixed_str<MAX_LEN_WEAPON_NAME>;
 
 struct Weapon
 {
+  constexpr Weapon() = default;
+  constexpr Weapon(weapon_name name, Ammo type, RangeLimits limits, heat h, damage perShot, heat hDmg = heat{0})
+    : name{name}
+    , ammoType{type}
+    , ranges{limits}
+    , heatCaused{h}
+    , perShot{perShot}
+  {}
   weapon_name name;
   component_id component{ 0 };
   Ammo ammoType = Ammo::NONE;
@@ -20,9 +28,11 @@ struct Weapon
   heat heatCaused{ 0 };
 
   heat htDmg{ 0 };
-  damage damagePerCluster{ 0 };
-  byte clusters{ 1 };
+  damage perShot{ 0 };
+  // how many shots are there in cluster
   byte shotsPerCluster{ 1 };
+  // how many individual shots are fired per action
+  byte shots{ 1 };
   
   bool isRear = false;
   // when component is destroyed
@@ -30,7 +40,7 @@ struct Weapon
 
   constexpr damage totalDamage() const
   {
-    return damage{ static_cast<byte>(damagePerCluster.value * clusters) };
+    return damage{ static_cast<byte>(perShot.value * shots) };
   }
 
   static constexpr Weapon fromType(Ammo type)
@@ -41,7 +51,7 @@ struct Weapon
     switch (type)
     {
     case Ammo::LRM_10:
-      result.ranges.minRange = range{6};
+      result.ranges.minRange = range{ 6 };
       result.ranges.sht() = range{ 7 };
       result.ranges.mid() = range{ 14 };
       result.ranges.lng() = range{ 21 };

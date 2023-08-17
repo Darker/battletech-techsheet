@@ -135,6 +135,7 @@
     <ClInclude Include="..\..\include\techsheet\TurnResults.h" />
     <ClInclude Include="..\..\include\techsheet\types.h" />
     <ClInclude Include="..\..\include\techsheet\Weapon.h" />
+    <ClInclude Include="..\..\tools\weapon_db.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\lib\techsheet_lib.cpp" />

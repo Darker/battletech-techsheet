@@ -16,6 +16,9 @@
     <Filter Include="Header Files\interators">
       <UniqueIdentifier>{2a6c53c6-006e-4f34-8ca3-cff8d63466d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\generated">
+      <UniqueIdentifier>{5b936aa4-cd57-4f62-aa77-b03247ec51d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\techsheet\Mech.h">
@@ -77,6 +80,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\techsheet\Ammo.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\weapon_db.h">
+      <Filter>Header Files\generated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -11,13 +11,17 @@ enum class Ammo : byte
 {
   NONE,
   AC_2,
+  AC_4,
+  AC_8,
   AC_5,
   AC_10,
+  AC_15,
   AC_20,
   LRIFLE,
   MRIFLE,
   SRIFLE,
   LB_10_X_AC,
+  LRM_1,
   LRM_5,
   LRM_10,
   LRM_15,
@@ -32,6 +36,10 @@ enum class Ammo : byte
   PLASMA,
   GAUSS,
   AMS,
+  HAG_20,
+  HAG_30,
+  HAG_40,
+  MAGSHOT,
   NO_AMMO_TYPES
 };
 
@@ -40,12 +48,16 @@ constexpr std::array Ammo_names
   "NONE",
   "AC_2",
   "AC_5",
+  "AC_4",
+  "AC_8",
   "AC_10",
+  "AC_15",
   "AC_20",
   "LRIFLE",
   "MRIFLE",
   "SRIFLE",
   "LB_10_X_AC",
+  "LRM_1",
   "LRM_5",
   "LRM_10",
   "LRM_15",
@@ -59,7 +71,11 @@ constexpr std::array Ammo_names
   "CHEM_PPC",
   "PLASMA",
   "GAUSS",
-  "AMS"
+  "AMS",
+  "HAG_20",
+  "HAG_30",
+  "HAG_40",
+  "MAGSHOT"
 };
 static_assert(Ammo_names.size() == to_underlying(Ammo::NO_AMMO_TYPES), "If you add weapon, add it to the names too.");
 constexpr auto Ammo_getName = enumNameLookup<Ammo, Ammo::NO_AMMO_TYPES, &Ammo_names>;
@@ -69,6 +85,24 @@ constexpr auto Ammo_getValueNoOpt = enumValueLookupNoOpt<Ammo, Ammo::NO_AMMO_TYP
 constexpr bool ammoExplodes(Ammo ammo_type)
 {
   return ammo_type != Ammo::NONE && ammo_type != Ammo::PLASMA;
+}
+
+constexpr byte ammoClusterSize(Ammo ammo_type)
+{
+  switch (ammo_type)
+  {
+  case Ammo::LRM_5:
+  case Ammo::LRM_10:
+  case Ammo::LRM_15:
+  case Ammo::LRM_20:
+    return 5;
+  case Ammo::SRM_2:
+  case Ammo::SRM_4:
+  case Ammo::SRM_6:
+    return 2;
+  default:
+    return 1;
+  }
 }
 
 // few enum error checks
