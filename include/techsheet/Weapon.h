@@ -20,10 +20,12 @@ struct Weapon
     , ranges{limits}
     , heatCaused{h}
     , perShot{perShot}
+    , htDmg{hDmg}
   {}
   weapon_name name;
   component_id component{ 0 };
   Ammo ammoType = Ammo::NONE;
+  component_id ammoBin{ 0 };
   RangeLimits ranges;
   heat heatCaused{ 0 };
 
@@ -37,6 +39,16 @@ struct Weapon
   bool isRear = false;
   // when component is destroyed
   bool explodes = false;
+
+  constexpr bool lacksAmmo() const
+  {
+    return ammoBin.isInvalid() && usesAmmo();
+  }
+
+  constexpr bool usesAmmo() const
+  {
+    return ammoType != Ammo::NONE;
+  }
 
   constexpr damage totalDamage() const
   {

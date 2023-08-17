@@ -16,7 +16,9 @@ struct component_id : id_number_t<component_id>
   {
     return component_id{ ++value };
   }
-};
 
+  constexpr bool isInvalid() const { return value == 0; }
+  constexpr bool isValid() const { return value != 0; }
+};
 
 }

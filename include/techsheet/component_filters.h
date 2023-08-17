@@ -33,7 +33,7 @@ constexpr bool is_part(const Component& c, const Internal& bodyPart)
   return c.position == bodyPart;
 }
 
-constexpr bool is_viable_ammo(const Component& c, Ammo ammoType)
+constexpr bool is_viable_ammo(const Component& c, const Ammo& ammoType)
 {
   return !c.isDestroyed() && c.ammoType == ammoType && c.ammo > 0;
 }

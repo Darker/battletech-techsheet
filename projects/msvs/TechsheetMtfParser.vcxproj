@@ -11,8 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\mtfparser\AmmoMetaInfo.h" />
+    <ClInclude Include="..\..\include\mtfparser\MtfParser.h" />
     <ClInclude Include="..\..\include\mtfparser\name_conversions.h" />
+    <ClInclude Include="..\..\include\mtfparser\parse_exceptions.h" />
+    <ClInclude Include="..\..\include\mtfparser\WeaponMetaInfo.h" />
+    <ClInclude Include="..\..\include\mtfparser\weapon_lookup.h" />
+    <ClInclude Include="..\..\src\MtfParser\ammo_db.h" />
     <ClInclude Include="..\..\src\MtfParser\weapon_db.h" />
+    <ClInclude Include="..\..\src\MtfParser\weapon_name_db.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\MtfParser\MtfParser.cpp" />
+    <ClCompile Include="..\..\src\MtfParser\weapon_lookup.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -37,21 +48,24 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <Import Project="techsheetdependency.props" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="techsheetdependency_no_linker.props" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="techsheetdependency_no_linker.props" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(MSBuildThisFileDirectory)..\..\build\MSVC\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
     <IntDir>$(MSBuildThisFileDirectory)..\..\build\tmp\$(ProjectName)\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
+    <TargetName>mtfparser</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(MSBuildThisFileDirectory)..\..\build\MSVC\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</OutDir>
     <IntDir>$(MSBuildThisFileDirectory)..\..\build\tmp\$(ProjectName)\$(Platform)_v$(PlatformToolsetVersion)_$(Configuration)\</IntDir>
+    <TargetName>mtfparser</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -60,6 +74,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\include\mtfparser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -75,6 +90,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\include\mtfparser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

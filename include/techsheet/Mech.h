@@ -65,32 +65,38 @@ struct Mech
     }
   }
 
-  Component& lookupComponent(component_id id)
+  Component* lookupComponent(component_id id)
   {
     for (auto& comp : components)
     {
       if (comp.id == id)
       {
-        return comp;
+        return &comp;
       }
     }
-    return INVALID_COMPONENT;
+    return nullptr;
   }
-  const Component& lookupComponent(component_id id) const
+  const Component* lookupComponent(component_id id) const
   {
-    return std::as_const(const_cast<Mech*>(this)->lookupComponent(id));
+    return const_cast<Mech*>(this)->lookupComponent(id);
   }
-  const Weapon& lookupWeapon(component_id id) const
+  Weapon* lookupWeapon(component_id id)
   {
-    for (const auto& w : weapons)
+    for (auto& w : weapons)
     {
       if (w.component == id)
       {
-        return w;
+        return &w;
       }
     }
-    return INVALID_WEAPON;
+    return nullptr;
   }
+
+  const Weapon* lookupWeapon(component_id id) const
+  {
+    return const_cast<Mech*>(this)->lookupWeapon(id);
+  }
+
 
   void init(InternalHealth<byte> ih, ArmorHealth<byte> ah)
   {
@@ -117,12 +123,10 @@ struct Mech
   {
     return make_filtered(components, &pred::is_usable);
   }
-
   auto validHeatsinks() const
   {
     return make_filtered(components, &pred::is_heatsink, &pred::is_usable);
   }
-
   auto validHeatsinks()
   {
     return make_filtered(components, &pred::is_heatsink, &pred::is_usable);
@@ -139,7 +143,62 @@ struct Mech
   {
     return make_filtered(components, segment, &pred::is_part);
   }
+  auto ammoComponents(Ammo aType) const
+  {
+    return make_filtered(components, aType, &pred::is_viable_ammo);
+  }
 #pragma endregion
+
+  bool autoSelectAmmoBin(component_id wid)
+  {
+    Weapon* w = lookupWeapon(wid);
+    const Component* wcmp = lookupComponent(wid);
+    if (w != nullptr && wcmp != nullptr)
+    {
+      if (w->ammoType == Ammo::NONE)
+      {
+        return true;
+      }
+
+      byte closestAmmoDist = std::numeric_limits<byte>::max();
+      component_id closestAmmoId{ 0 };
+      for (const auto& ammo : ammoComponents(w->ammoType))
+      {
+        const auto dist = segmentDistance(wcmp->position, ammo.position);
+        if (dist < closestAmmoDist)
+        {
+          closestAmmoDist = dist;
+          closestAmmoId = ammo.id;
+
+          if (dist == 0)
+          {
+            break;
+          }
+        }
+      }
+
+      if (closestAmmoId.isValid())
+      {
+        w->ammoBin = closestAmmoId;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool autoSelectAllWeaponAmmo()
+  {
+    bool allSuccess = true;
+    for (Weapon& w : weapons)
+    {
+      if (w.lacksAmmo())
+      {
+        const bool ok = autoSelectAmmoBin(w.component);
+        allSuccess = ok && allSuccess;
+      }
+    }
+    return allSuccess;
+  }
 
   byte countSpecialHits(SpecialComponent part) const
   {

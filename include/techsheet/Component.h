@@ -27,6 +27,7 @@ struct Component
 
   Internal position = Internal::NUM_SEGMENTS;
   component_id id{ 0 };
+  component_name name{""};
   //component_name name;
   // critical hit locations as d12 roll
   CritRange locations;

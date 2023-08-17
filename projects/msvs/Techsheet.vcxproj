@@ -129,12 +129,14 @@
     <ClInclude Include="..\..\include\techsheet\RangeLimits.h" />
     <ClInclude Include="..\..\include\techsheet\scalar_defs.h" />
     <ClInclude Include="..\..\include\techsheet\std_cout_printing.h" />
+    <ClInclude Include="..\..\include\techsheet\string_view_util.h" />
     <ClInclude Include="..\..\include\techsheet\structure.h" />
     <ClInclude Include="..\..\include\techsheet\structure_static.h" />
     <ClInclude Include="..\..\include\techsheet\template_defs.h" />
     <ClInclude Include="..\..\include\techsheet\TurnResults.h" />
     <ClInclude Include="..\..\include\techsheet\types.h" />
     <ClInclude Include="..\..\include\techsheet\Weapon.h" />
+    <ClInclude Include="..\..\include\techsheet\WeaponComponent.h" />
     <ClInclude Include="..\..\tools\weapon_db.h" />
   </ItemGroup>
   <ItemGroup>

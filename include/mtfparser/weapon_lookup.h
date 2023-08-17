@@ -3,6 +3,7 @@
 #include "WeaponMetaInfo.h"
 
 #include <optional>
+#include <stdexcept>
 
 namespace mtfparser
 {
@@ -23,7 +24,9 @@ public:
     // if this is set, type should be internal. This means internal name lookup failed
     WEAPONS,
     // if this is set, lookup in meta info failed
-    WEAPON_META
+    WEAPON_META,
+    // this was ammo lookup, which means that weapon lookup previously failed
+    AMMO
   };
 
   static std::string makeMessage(Type tl, Target tg, std::string_view name)
@@ -38,6 +41,11 @@ public:
   static auto metaFailure(std::string_view name)
   {
     return LookupFailure(LookupFailure::Type::LOOKUP_NAME, LookupFailure::Target::WEAPON_META, name);
+  }
+
+  static auto ammoFailure(std::string_view name)
+  {
+    return LookupFailure(LookupFailure::Type::LOOKUP_NAME, LookupFailure::Target::AMMO, name);
   }
 
   static auto weaponDbFailure(std::string_view name)
@@ -59,6 +67,10 @@ public:
 
 using WeaponComponent = techsheet::WeaponComponent;
 
+/*
+* Tries to find either a weapon or ammo using given name.
+* If this resolves as a weapon, it the weapon part of the pair will be populated.
+*/
 WeaponComponent weaponComponentFromName(std::string_view name);
 
 }

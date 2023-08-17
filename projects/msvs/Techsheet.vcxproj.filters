@@ -84,6 +84,12 @@
     <ClInclude Include="..\..\tools\weapon_db.h">
       <Filter>Header Files\generated</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\techsheet\string_view_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\techsheet\WeaponComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\lib\techsheet_lib.cpp">
