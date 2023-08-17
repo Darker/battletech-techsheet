@@ -150,34 +150,43 @@ std::pair<Component, std::optional<Weapon>> parseComponent(std::string name)
   return { result, std::nullopt };
 }
 
+std::string getline_stripped(std::ifstream& input, int& it)
+{
+  std::string ret;
+  std::getline(input, ret);
+  it++;
+  if (ret.empty())
+    return ret;
+  ret.erase(std::remove(std::begin(ret), std::end(ret), '\r'), std::end(ret));
+  return ret;
+}
+
 void loadMechData(Mech& srcMech, const char* filename)
 {
   Mech mech = srcMech;
 
+  int linenum = 0;
   std::ifstream infile(filename);
-  std::string line;
+  const std::string version_read = getline_stripped(infile, linenum);
   // first line is version
-  std::getline(infile, line);
-  if (line != "Version:1.0")
+  const std::string version_expected = "Version:1.0";
+  if (version_read != version_expected)
   {
-    throw std::runtime_error("Unexpected version first line: "+line);
+    throw std::runtime_error("Unexpected version first line: '" + version_read + "', expected: '" + version_expected + "' (" + std::to_string(version_read.size()) + " chars, expected " + std::to_string(version_expected.size()) + ").");
   }
   // next two lines are mech name
-  mech.name = "";
-  std::getline(infile, line);
-  mech.name += line;
-  std::getline(infile, line);
-  mech.name += "-";
-  mech.name += line;
+  mech.name = getline_stripped(infile, linenum) + "-" + getline_stripped(infile, linenum);
 
-  while (std::getline(infile, line))
+  while (!infile.eof())
   {
+    const std::string line = getline_stripped(infile, linenum);
     if (line.empty())
       continue;
+
     const auto commaPos = line.find(":");
     if (commaPos == std::string::npos)
     {
-      throw std::runtime_error("Cannot parse expression" + line);
+      throw std::runtime_error("Cannot parse expression '" + line + "' at line " + std::to_string(linenum));
     }
 
     const auto valueName = str::tolower(line.substr(0, commaPos));
@@ -239,9 +248,10 @@ void loadMechData(Mech& srcMech, const char* filename)
     }
     else if (valueName == "weapons")
     {
-      while (std::getline(infile, line))
+      while (!infile.eof())
       {
-        if (str::trim_copy(line).empty())
+        const std::string weapon_data = getline_stripped(infile, linenum);
+        if (str::trim_copy(weapon_data).empty())
           break;
       }
     }
@@ -251,27 +261,28 @@ void loadMechData(Mech& srcMech, const char* filename)
       byte skipLines = 0;
       byte position = 0;
       // load all components
-      while (std::getline(infile, line))
+      while (!infile.eof())
       {
-        if (str::trim_copy(line).empty())
+        const std::string component_data = getline_stripped(infile, linenum);
+        if (str::trim_copy(component_data).empty())
           break;
         if (skipLines > 0)
         {
           --skipLines;
           continue;
         }
-        if (line == "-Empty-")
+        if (component_data == "-Empty-")
         {
           ++position;
           continue;
         }
-        auto lineComp = parseComponent(line);
+        auto lineComp = parseComponent(component_data);
         lineComp.first.locations = lineComp.first.locations.offset(position);
         lineComp.first.position = targetPart;
 
         if (!crit::rangeForSegment(targetPart).containsIncl(lineComp.first.locations))
         {
-          throw std::runtime_error("Component " + line + " for " + valueName + " is at an invalid location.");
+          throw std::runtime_error("Component " + component_data + " for " + valueName + " is at an invalid location.");
         }
 
         mech.addComponent(lineComp);
@@ -449,6 +460,10 @@ int main(int argc, const char** argv)
       {
         std::cout << "Bye.\n";
         return 0;
+      }
+      else
+      {
+        std::cout << "Unknown command '" << command << "'.\n";
       }
     }
     catch (const std::runtime_error& e)
