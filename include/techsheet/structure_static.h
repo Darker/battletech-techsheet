@@ -280,7 +280,7 @@ constexpr InternalHealth<byte> defaultInternalHealth(mass mechMass)
 {
   for (const auto& cfg : struct_data::internalStructureLookupData)
   {
-    if (cfg.first <= mechMass)
+    if (cfg.first >= mechMass)
     {
       return cfg.second;
     }

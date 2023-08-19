@@ -58,9 +58,9 @@ struct same_signage
 template <class T, class F>
 struct is_safe_numeric_cast
   : cast_helpers::pred_base <cast_helpers::both_numeric<T, F>::value &&                            // Obviously both src and dest must be numbers
-  (std::is_floating_point<T>::value && (std::is_integral<F>::value || sizeof(T) >= sizeof(F))) ||  // Floating dest: src must be integral or smaller/equal float-type
+  ((std::is_floating_point<T>::value && (std::is_integral<F>::value || sizeof(T) >= sizeof(F))) ||  // Floating dest: src must be integral or smaller/equal float-type
   ((cast_helpers::both_integral<T, F>::value) &&                                                   // Integral dest: src must be integral and (smaller/equal+same signage) or (smaller+different signage)
-    (sizeof(T) > sizeof(F) || (sizeof(T) == sizeof(F) && cast_helpers::same_signage<T, F>::value)))>
+    (sizeof(T) > sizeof(F) || (sizeof(T) == sizeof(F) && cast_helpers::same_signage<T, F>::value))))>
 {
 };
 template <class T, class F>

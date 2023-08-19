@@ -4,6 +4,7 @@
 
 #include <optional>
 #include <stdexcept>
+#include <string>
 
 namespace mtfparser
 {

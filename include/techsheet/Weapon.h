@@ -19,8 +19,8 @@ struct Weapon
     , ammoType{type}
     , ranges{limits}
     , heatCaused{h}
-    , perShot{perShot}
     , htDmg{hDmg}
+    , perShot{ perShot }
   {}
   weapon_name name;
   component_id component{ 0 };

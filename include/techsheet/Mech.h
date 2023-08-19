@@ -228,6 +228,8 @@ struct Mech
 
   DamageResult processDamage(IncomingDamage dmg)
   {
+    structure.unstage();
+
     if (!dmg.staging)
     {
       DamageResult result = structure.receiveDamage(dmg);

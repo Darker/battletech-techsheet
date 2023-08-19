@@ -46,7 +46,7 @@ protected:
   {}
 };
 
-std::string critRange2String(techsheet::CritRange r)
+static std::string critRange2String(techsheet::CritRange r)
 {
   return std::string{ "<" } + std::to_string((int)r.min) + ", " + std::to_string((int)r.max) + ">";
 }

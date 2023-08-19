@@ -1,5 +1,6 @@
 #include "string_tools.h"
 #include "is_windows.h"
+#include "emscripten_polyfill.h"
 
 #include <techsheet/Mech.h>
 #include <techsheet/std_cout_printing.h>
@@ -250,3 +251,4 @@ int main(int argc, const char** argv)
   }
   return 0;
 }
+
