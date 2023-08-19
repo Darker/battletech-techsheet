@@ -25,6 +25,11 @@ struct RangeLimits
     : penaltyRanges{ range::forced_cast(ar[0]), range::forced_cast(ar[1]), range::forced_cast(ar[2]), range::forced_cast(ar[3]) }
   {}
 
+  constexpr RangeLimits(int sht, int med, int lng, int extreme, int min = 0)
+    : penaltyRanges{ range::forced_cast(sht), range::forced_cast(med), range::forced_cast(lng), range::forced_cast(extreme) }
+    , minRange{range::forced_cast(min)}
+  {}
+
   enum class Type: byte
   {
     SHORT,
@@ -37,16 +42,16 @@ struct RangeLimits
   range minRange{ 0 };
 
 #pragma region named getters
-  range& sht() { return penaltyRanges[0]; }
-  range& med() { return penaltyRanges[1]; }
-  range& mid() { return penaltyRanges[1]; }
-  range& lng() { return penaltyRanges[2]; }
-  range& ext() { return penaltyRanges[3]; }
-  const range& sht() const { return penaltyRanges[0]; }
-  const range& med() const { return penaltyRanges[1]; }
-  const range& mid() const { return penaltyRanges[1]; }
-  const range& lng() const { return penaltyRanges[2]; }
-  const range& ext() const { return penaltyRanges[3]; }
+  constexpr range& sht() { return penaltyRanges[0]; }
+  constexpr range& med() { return penaltyRanges[1]; }
+  constexpr range& mid() { return penaltyRanges[1]; }
+  constexpr range& lng() { return penaltyRanges[2]; }
+  constexpr range& ext() { return penaltyRanges[3]; }
+  constexpr const range& sht() const { return penaltyRanges[0]; }
+  constexpr const range& med() const { return penaltyRanges[1]; }
+  constexpr const range& mid() const { return penaltyRanges[1]; }
+  constexpr const range& lng() const { return penaltyRanges[2]; }
+  constexpr const range& ext() const { return penaltyRanges[3]; }
 #pragma endregion
 
   /*

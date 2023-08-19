@@ -211,6 +211,40 @@ static constexpr std::optional<Internal> nextSegment(Internal const segment)
   return std::nullopt;
 }
 
+
+static constexpr byte segmentDistance(Internal a, Internal b)
+{
+  constexpr std::array dist_matrix{
+    // HD,CT,RT,LT,RL,LL,RA,LA
+    // HEAD
+       0, 1, 2, 2, 3, 3 ,3, 3,
+    // CT
+       1, 0, 1, 1, 2, 2 ,2, 2,
+    // RT
+       2, 1, 0, 2, 1, 2 ,1, 2,
+    // LT
+       2, 1, 2, 0, 2, 1 ,2, 1,
+    // RL
+       3, 2, 1, 2, 0, 2, 2, 4,
+    // LL
+       3, 2, 2, 1, 2, 0, 4, 2,
+    // RA
+       3, 2, 1, 2, 2, 4, 0, 4,
+    // LA
+       3, 2, 2, 1, 4, 2, 4, 0
+  };
+  if (to_underlying(a) >= to_underlying(Internal::NUM_SEGMENTS))
+  {
+    return 0;
+  }
+  if (to_underlying(b) >= to_underlying(Internal::NUM_SEGMENTS))
+  {
+    return 0;
+  }
+  const auto res = dist_matrix[to_underlying(a) * to_underlying(Internal::NUM_SEGMENTS) + to_underlying(b)];
+  return static_cast<byte>(res);
+}
+
 template<typename THealth, typename = std::enable_if_t<health::is_constructible_from<THealth>>>
 using InternalHealth = std::array<THealth, Internal_count>;
 template<typename THealth, typename = std::enable_if_t<health::is_constructible_from<THealth>>>
@@ -246,7 +280,7 @@ constexpr InternalHealth<byte> defaultInternalHealth(mass mechMass)
 {
   for (const auto& cfg : struct_data::internalStructureLookupData)
   {
-    if (cfg.first <= mechMass)
+    if (cfg.first >= mechMass)
     {
       return cfg.second;
     }
@@ -260,6 +294,9 @@ namespace static_test
 static_assert(toInternal(Armor::LA) == Internal::LA, "Error converting from armor to structure");
 static_assert(toInternal(Armor::CTR) == Internal::CT, "Error converting from armor to structure");
 static_assert(toInternal(Armor::HEAD) == Internal::HEAD, "Error converting from armor to structure");
+
+static_assert(segmentDistance(Internal::LA, Internal::HEAD) == segmentDistance(Internal::HEAD, Internal::LA), "Segment distance error");
+static_assert(segmentDistance(Internal::HEAD, Internal::RL) == 3, "Segment distance error");
 
 }
 

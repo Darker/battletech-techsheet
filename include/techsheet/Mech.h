@@ -6,6 +6,7 @@
 #include "id_defs.h"
 #include "structure.h"
 #include "Weapon.h"
+#include "WeaponComponent.h"
 
 #include "iterators/filtered_collection.h"
 
@@ -21,6 +22,8 @@ using mech_name = fixed_str<MAX_LEN_MECH_NAME>;
 
 struct Mech
 {
+  static constexpr damage PSR_DAMAGE_LIMIT{ 20 };
+
   mech_name name;
   StructureManager structure;
   heat currentHeat{ 0 };
@@ -28,6 +31,7 @@ struct Mech
   bool doubleHeatSinks = false;
   unsigned short engineRating = 0;
   mass wgt{ 0 };
+  damage damageThisTurn{ 0 };
 
   std::vector<Component> components;
   std::vector<Weapon> weapons;
@@ -49,7 +53,7 @@ struct Mech
     weapons.push_back(w);
   }
 
-  void addComponent(std::pair<Component, std::optional<Weapon>> p)
+  void addComponent(WeaponComponent p)
   {
     if (p.second.has_value())
     {
@@ -61,31 +65,36 @@ struct Mech
     }
   }
 
-  Component& lookupComponent(component_id id)
+  Component* lookupComponent(component_id id)
   {
     for (auto& comp : components)
     {
       if (comp.id == id)
       {
-        return comp;
+        return &comp;
       }
     }
-    return INVALID_COMPONENT;
+    return nullptr;
   }
-  const Component& lookupComponent(component_id id) const
+  const Component* lookupComponent(component_id id) const
   {
-    return std::as_const(const_cast<Mech*>(this)->lookupComponent(id));
+    return const_cast<Mech*>(this)->lookupComponent(id);
   }
-  const Weapon& lookupWeapon(component_id id) const
+  Weapon* lookupWeapon(component_id id)
   {
-    for (const auto& w : weapons)
+    for (auto& w : weapons)
     {
       if (w.component == id)
       {
-        return w;
+        return &w;
       }
     }
-    return INVALID_WEAPON;
+    return nullptr;
+  }
+
+  const Weapon* lookupWeapon(component_id id) const
+  {
+    return const_cast<Mech*>(this)->lookupWeapon(id);
   }
 
 
@@ -114,12 +123,10 @@ struct Mech
   {
     return make_filtered(components, &pred::is_usable);
   }
-
   auto validHeatsinks() const
   {
     return make_filtered(components, &pred::is_heatsink, &pred::is_usable);
   }
-
   auto validHeatsinks()
   {
     return make_filtered(components, &pred::is_heatsink, &pred::is_usable);
@@ -136,6 +143,63 @@ struct Mech
   {
     return make_filtered(components, segment, &pred::is_part);
   }
+  auto ammoComponents(Ammo aType) const
+  {
+    return make_filtered(components, aType, &pred::is_viable_ammo);
+  }
+#pragma endregion
+
+  bool autoSelectAmmoBin(component_id wid)
+  {
+    Weapon* w = lookupWeapon(wid);
+    const Component* wcmp = lookupComponent(wid);
+    if (w != nullptr && wcmp != nullptr)
+    {
+      if (w->ammoType == Ammo::NONE)
+      {
+        return true;
+      }
+
+      byte closestAmmoDist = std::numeric_limits<byte>::max();
+      component_id closestAmmoId{ 0 };
+      for (const auto& ammo : ammoComponents(w->ammoType))
+      {
+        const auto dist = segmentDistance(wcmp->position, ammo.position);
+        if (dist < closestAmmoDist)
+        {
+          closestAmmoDist = dist;
+          closestAmmoId = ammo.id;
+
+          if (dist == 0)
+          {
+            break;
+          }
+        }
+      }
+
+      if (closestAmmoId.isValid())
+      {
+        w->ammoBin = closestAmmoId;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool autoSelectAllWeaponAmmo()
+  {
+    bool allSuccess = true;
+    for (Weapon& w : weapons)
+    {
+      if (w.lacksAmmo())
+      {
+        const bool ok = autoSelectAmmoBin(w.component);
+        allSuccess = ok && allSuccess;
+      }
+    }
+    return allSuccess;
+  }
+
   byte countSpecialHits(SpecialComponent part) const
   {
     byte count = 0;
@@ -161,10 +225,11 @@ struct Mech
     heat power = heatSinkCount();
     return doubleHeatSinks ? heat::forced_cast(2 * power.value) : power;
   }
-#pragma endregion
 
   DamageResult processDamage(IncomingDamage dmg)
   {
+    structure.unstage();
+
     if (!dmg.staging)
     {
       DamageResult result = structure.receiveDamage(dmg);
@@ -200,15 +265,30 @@ struct Mech
           c.status = Component::Status::LAST_TURN;
         }
       }
+
+      damageThisTurn += dmg.dmg;
+
+      if (damageRequiresPSR())
+      {
+        result.psrRequired = true;
+      }
+
       return result;
     }
     return DamageResult{};
   }
 
   /*
+  * Returns true if aggregate damage this turn requires piloting skill roll
+  */
+  bool damageRequiresPSR() const
+  {
+    return damageThisTurn >= PSR_DAMAGE_LIMIT;
+  }
+  /*
   * Finds what component would be hit and if it is a special hit.
   * The critPos should directly be the dice number, starting at 1 ending at 6 or 12
-  * \param execute should be set to false if you want the info but no effect on Mech'
+  * \param execute should be set to false if you want the info but no effect on 'Mech
   */
   CritRollResult receiveCrit(Internal segment, byte critPos, bool execute)
   {

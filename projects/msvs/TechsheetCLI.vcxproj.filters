@@ -13,9 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\web">
+      <UniqueIdentifier>{a3f00006-4097-46b9-ad5a-c33f752d6ed3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\CLI\CLIMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\CLI\WebMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -25,6 +31,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\CLI\is_windows.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\CLI\emscripten_polyfill.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\CLI\web\optional_wrapper.h">
+      <Filter>Header Files\web</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\CLI\web\number_ish_wrapper.h">
+      <Filter>Header Files\web</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
