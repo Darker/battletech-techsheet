@@ -1,4 +1,12 @@
 
+var techsheet = (() => {
+  var _scriptDir = import.meta.url;
+  
+  return (
+function(techsheet) {
+  techsheet = techsheet || {};
+
+
 
 // The Module object: Our interface to the outside world. We import
 // and export values on it. There are various ways Module can be used:
@@ -13,11 +21,26 @@
 // after the generated code, you will need to define   var Module = {};
 // before the code. Then that object will be used in the code, and you
 // can continue to use Module afterwards as well.
-var Module = typeof Module != 'undefined' ? Module : {};
+var Module = typeof techsheet != 'undefined' ? techsheet : {};
 
 // See https://caniuse.com/mdn-javascript_builtins_object_assign
 
 // See https://caniuse.com/mdn-javascript_builtins_bigint64array
+
+// Set up the promise that indicates the Module is initialized
+var readyPromiseResolve, readyPromiseReject;
+Module['ready'] = new Promise(function(resolve, reject) {
+  readyPromiseResolve = resolve;
+  readyPromiseReject = reject;
+});
+["_main","_initStructureInternal","_getStructureInternal","_getStructureArmor","_initStructureArmor","_receiveDamage","_unstageDamage","_parseMech","_getTotalJumpPower","__Z16getInternalNamesv","__Z13getArmorNamesv","__Z17getHealthInternalN10emscripten3valE","__Z14getHealthArmorNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEE","__Z13getComponentsv","__Z10getWeaponsv","__Z12getComponenti","__Z9getWeaponi","__Z9getNumberv","__Z22my_number_value_to_valRK15my_number_value","__Z22val_to_my_number_valueRKN10emscripten3valE","___getTypeName","__embind_initialize_bindings","_fflush","onRuntimeInitialized"].forEach((prop) => {
+  if (!Object.getOwnPropertyDescriptor(Module['ready'], prop)) {
+    Object.defineProperty(Module['ready'], prop, {
+      get: () => abort('You are getting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
+      set: () => abort('You are setting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
+    });
+  }
+});
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
@@ -137,9 +160,7 @@ readAsync = (filename, onload, onerror) => {
 
   arguments_ = process['argv'].slice(2);
 
-  if (typeof module != 'undefined') {
-    module['exports'] = Module;
-  }
+  // MODULARIZE will export the module in the proper place outside, we don't need to export here
 
   process['on']('uncaughtException', function(ex) {
     // suppress ExitStatus exceptions from showing an error
@@ -221,6 +242,11 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     scriptDirectory = self.location.href;
   } else if (typeof document != 'undefined' && document.currentScript) { // web
     scriptDirectory = document.currentScript.src;
+  }
+  // When MODULARIZE, this JS may be executed later, after document.currentScript
+  // is gone, so we saved it, and we use it here instead of any other info.
+  if (_scriptDir) {
+    scriptDirectory = _scriptDir;
   }
   // blob urls look like blob:http://site.com/etc/etc and we cannot infer anything from them.
   // otherwise, slice off the final part of the url to find the script directory.
@@ -940,6 +966,7 @@ function abort(what) {
   /** @suppress {checkTypes} */
   var e = new WebAssembly.RuntimeError(what);
 
+  readyPromiseReject(e);
   // Throw the error whether or not MODULARIZE is set because abort is used
   // in code paths apart from instantiation where an exception is expected
   // to be thrown when abort is called.
@@ -987,10 +1014,15 @@ function createExportWrapper(name, fixedasm) {
 }
 
 var wasmBinaryFile;
+if (Module['locateFile']) {
   wasmBinaryFile = 'techsheet_cli.wasm';
   if (!isDataURI(wasmBinaryFile)) {
     wasmBinaryFile = locateFile(wasmBinaryFile);
   }
+} else {
+  // Use bundler-friendly `new URL(..., import.meta.url)` pattern; works in browsers too.
+  wasmBinaryFile = new URL('techsheet_cli.wasm', import.meta.url).toString();
+}
 
 function getBinary(file) {
   try {
@@ -1154,11 +1186,13 @@ function createWasm() {
       return exports;
     } catch(e) {
       err('Module.instantiateWasm callback failed with error: ' + e);
-        return false;
+        // If instantiation fails, reject the module ready promise.
+        readyPromiseReject(e);
     }
   }
 
-  instantiateAsync();
+  // If instantiation fails, reject the module ready promise.
+  instantiateAsync().catch(readyPromiseReject);
   return {}; // no exports yet; we'll fill them in later
 }
 
@@ -5193,6 +5227,68 @@ var ASM_CONSTS = {
       });
     }
 
+  function enumReadValueFromPointer(name, shift, signed) {
+      switch (shift) {
+          case 0: return function(pointer) {
+              var heap = signed ? HEAP8 : HEAPU8;
+              return this['fromWireType'](heap[pointer]);
+          };
+          case 1: return function(pointer) {
+              var heap = signed ? HEAP16 : HEAPU16;
+              return this['fromWireType'](heap[pointer >> 1]);
+          };
+          case 2: return function(pointer) {
+              var heap = signed ? HEAP32 : HEAPU32;
+              return this['fromWireType'](heap[pointer >> 2]);
+          };
+          default:
+              throw new TypeError("Unknown integer type: " + name);
+      }
+    }
+  function __embind_register_enum(rawType, name, size, isSigned) {
+      var shift = getShiftFromSize(size);
+      name = readLatin1String(name);
+  
+      function ctor() {}
+      ctor.values = {};
+  
+      registerType(rawType, {
+        name: name,
+        constructor: ctor,
+        'fromWireType': function(c) {
+          return this.constructor.values[c];
+        },
+        'toWireType': function(destructors, c) {
+          return c.value;
+        },
+        'argPackAdvance': 8,
+        'readValueFromPointer': enumReadValueFromPointer(name, shift, isSigned),
+        destructorFunction: null,
+      });
+      exposePublicSymbol(name, ctor);
+    }
+
+  function requireRegisteredType(rawType, humanName) {
+      var impl = registeredTypes[rawType];
+      if (undefined === impl) {
+          throwBindingError(humanName + " has unknown type " + getTypeName(rawType));
+      }
+      return impl;
+    }
+  function __embind_register_enum_value(rawEnumType, name, enumValue) {
+      var enumType = requireRegisteredType(rawEnumType, 'enum');
+      name = readLatin1String(name);
+  
+      var Enum = enumType.constructor;
+  
+      var Value = Object.create(enumType.constructor.prototype, {
+        value: {value: enumValue},
+        constructor: {value: createNamedFunction(enumType.name + '_' + name, function() {})},
+      });
+      Enum.values[enumValue] = Value;
+      Enum[name] = Value;
+    }
+
   function embindRepr(v) {
       if (v === null) {
           return 'null';
@@ -5655,13 +5751,6 @@ var ASM_CONSTS = {
       });
     }
 
-  function requireRegisteredType(rawType, humanName) {
-      var impl = registeredTypes[rawType];
-      if (undefined === impl) {
-          throwBindingError(humanName + " has unknown type " + getTypeName(rawType));
-      }
-      return impl;
-    }
   function __emval_as(handle, returnType, destructorsRef) {
       handle = Emval.toValue(handle);
       returnType = requireRegisteredType(returnType, 'emval::as');
@@ -6215,6 +6304,7 @@ var ASM_CONSTS = {
       // if exit() was called explicitly, warn the user if the runtime isn't actually being shut down
       if (keepRuntimeAlive() && !implicit) {
         var msg = 'program exited (with status: ' + status + '), but EXIT_RUNTIME is not set, so halting execution but not exiting the runtime or preventing further async execution (build with EXIT_RUNTIME=1, if you want a true shutdown)';
+        readyPromiseReject(msg);
         err(msg);
       }
   
@@ -6494,6 +6584,8 @@ var asmLibraryArg = {
   "_embind_register_class_function": __embind_register_class_function,
   "_embind_register_class_property": __embind_register_class_property,
   "_embind_register_emval": __embind_register_emval,
+  "_embind_register_enum": __embind_register_enum,
+  "_embind_register_enum_value": __embind_register_enum_value,
   "_embind_register_float": __embind_register_float,
   "_embind_register_function": __embind_register_function,
   "_embind_register_integer": __embind_register_integer,
@@ -6547,6 +6639,9 @@ var _unstageDamage = Module["_unstageDamage"] = createExportWrapper("unstageDama
 var _parseMech = Module["_parseMech"] = createExportWrapper("parseMech");
 
 /** @type {function(...*):?} */
+var _getTotalJumpPower = Module["_getTotalJumpPower"] = createExportWrapper("getTotalJumpPower");
+
+/** @type {function(...*):?} */
 var __Z16getInternalNamesv = Module["__Z16getInternalNamesv"] = createExportWrapper("_Z16getInternalNamesv");
 
 /** @type {function(...*):?} */
@@ -6559,7 +6654,16 @@ var __Z17getHealthInternalN10emscripten3valE = Module["__Z17getHealthInternalN10
 var __Z14getHealthArmorNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module["__Z14getHealthArmorNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEE"] = createExportWrapper("_Z14getHealthArmorNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEE");
 
 /** @type {function(...*):?} */
-var __Z9getWeaponv = Module["__Z9getWeaponv"] = createExportWrapper("_Z9getWeaponv");
+var __Z13getComponentsv = Module["__Z13getComponentsv"] = createExportWrapper("_Z13getComponentsv");
+
+/** @type {function(...*):?} */
+var __Z10getWeaponsv = Module["__Z10getWeaponsv"] = createExportWrapper("_Z10getWeaponsv");
+
+/** @type {function(...*):?} */
+var __Z12getComponenti = Module["__Z12getComponenti"] = createExportWrapper("_Z12getComponenti");
+
+/** @type {function(...*):?} */
+var __Z9getWeaponi = Module["__Z9getWeaponi"] = createExportWrapper("_Z9getWeaponi");
 
 /** @type {function(...*):?} */
 var __Z9getNumberv = Module["__Z9getNumberv"] = createExportWrapper("_Z9getNumberv");
@@ -7113,7 +7217,6 @@ var missingLibrarySymbols = [
   'allocate',
   'registerInheritedInstance',
   'unregisterInheritedInstance',
-  'enumReadValueFromPointer',
   'getStringOrSymbol',
   'craftEmvalAllocator',
   'emval_get_global',
@@ -7195,6 +7298,7 @@ function run(args) {
 
     preMain();
 
+    readyPromiseResolve(Module);
     if (Module['onRuntimeInitialized']) Module['onRuntimeInitialized']();
 
     if (shouldRunNow) callMain(args);
@@ -7274,3 +7378,10 @@ run();
 
 
 
+
+
+  return techsheet.ready
+}
+);
+})();
+export default techsheet;

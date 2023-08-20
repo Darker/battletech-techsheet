@@ -15,7 +15,7 @@ constexpr bool is_usable(const Component& c)
 
 constexpr bool is_heatsink(const Component& c)
 {
-  return c.heat_removed > 0;
+  return c.heatRemoved > 0;
 }
 
 constexpr bool is_pending_destruction(const Component& c)

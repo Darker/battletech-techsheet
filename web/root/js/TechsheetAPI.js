@@ -1,3 +1,5 @@
+import ComponentRef from "./ComponentRef.js";
+import WeaponRef from "./WeaponRef.js";
 import { wrapVectorResult } from "./cppWrapUtil.js";
 import { TYPES, cwrap } from "./wasmWrap.js";
 
@@ -12,7 +14,10 @@ class TechsheetAPI {
         this.getArmorNames = wrapVectorResult(asmModule, "getArmorNames", TYPES.string);
         this.receiveDamage = cwrap(asmModule, "receiveDamage", TYPES.bool, TYPES.string, TYPES.int, TYPES.bool);
         this.unstageDamage = cwrap(asmModule, "unstageDamage", TYPES.void_t);
+        this.getTotalJumpPower = cwrap(asmModule, "getTotalJumpPower", TYPES.int);
         this._parseMech = cwrap(asmModule, "parseMech", TYPES.bool, TYPES.string);
+        this.getComponentIds = wrapVectorResult(asmModule, "getComponents", TYPES.int);
+        this.getWeaponIds = wrapVectorResult(asmModule, "getWeapons", TYPES.int);
     }
 
     /**
@@ -26,6 +31,21 @@ class TechsheetAPI {
         hp.delete();
         return res;
     }
+
+    *getComponents() {
+        const ids = this.getComponentIds();
+        for(const id of ids) {
+            yield new ComponentRef(this, id);
+        }
+    }
+
+    *getWeapons() {
+        const ids = this.getWeaponIds();
+        for(const id of ids) {
+            yield new WeaponRef(this, id);
+        }
+    }
+
     /**
      * 
      * @param {string} partName 

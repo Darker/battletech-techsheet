@@ -51,6 +51,7 @@ function fillDots(rectangle, count, dotRadius = 1.1) {
             circle.style.stroke = "black";
             circle.style.fill = "red";
             circle.style.strokeWidth = "0.1";
+            circle.style.pointerEvents = "none";
             rectangle.parentElement.appendChild(circle);
             circles.push(circle);
         }
@@ -72,6 +73,7 @@ class MechDots {
     constructor(componentName, svgRect) {
         this.name = componentName;
         this.rect = svgRect;
+        this.rect.style.cursor = "pointer";
         this.dotRadius = 1.1;
         /** @type {SVGCircleElement[]} **/
         this.dots = [];

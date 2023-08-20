@@ -1,0 +1,6 @@
+
+@media (max-width: 400px) {
+  table.weapons {
+    font-size: calc(0.4em + 1.5vw);
+  }
+}

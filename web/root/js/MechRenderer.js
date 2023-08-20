@@ -2,6 +2,8 @@
  * @typedef {import("./TechsheetAPI.js").default} TechsheetAPI
  **/
 
+import cellFromText from "./DOMhelpers.js/cellFromText.js";
+import setTextContent from "./DOMhelpers.js/setTextContent.js";
 import MechDots from "./rendering/MechDots.js";
 
 /**
@@ -74,6 +76,7 @@ class MechRenderer {
     }
     setDamageTarget(name) {
         this.currentDamageTarget = name;
+        setTextContent(".damage-target-name", name);
         console.log("Targeting "+name);
     }
     /**
@@ -141,6 +144,36 @@ class MechRenderer {
                     dots.setHealth(value);
                 }
             }
+        }
+    }
+    updateMovement() {
+        setTextContent(".movement-jump-power", this.techsheet.getTotalJumpPower());
+    }
+
+    updateWeapons() {
+        const list = document.querySelector("#weapon-list");
+        while(list.firstChild) {
+            list.removeChild(list.firstChild);
+        }
+        for(const w of this.techsheet.getWeapons()) {
+            const row = document.createElement("tr");
+            row.appendChild(cellFromText(w.weaponName));
+            row.appendChild(cellFromText(w.position));
+            row.appendChild(cellFromText(w.readWeapon(x=>x.heatCaused)+""));
+            row.appendChild(cellFromText(w.readWeapon(x=>x.totalDamage().value)));
+            row.appendChild(cellFromText(w.readWeapon(x=>x.ranges.min().value)));
+            row.appendChild(cellFromText(w.readWeapon(x=>x.ranges.sht().value)));
+            row.appendChild(cellFromText(w.readWeapon(x=>x.ranges.med().value)));
+            row.appendChild(cellFromText(w.readWeapon(x=>x.ranges.lng().value)));
+            row.appendChild(cellFromText("-"));
+            row.appendChild(cellFromText("-"));
+            const fireButton = document.createElement("input");
+            //fireButton.addEventListener("click", ())
+            fireButton.value = "FIRE";
+            const td = document.createElement("td");
+            td.appendChild(fireButton);
+            row.appendChild(td);
+            list.appendChild(row);
         }
     }
 

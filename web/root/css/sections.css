@@ -1,0 +1,91 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+section {
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid #ccc;
+}
+
+.left-section {
+  width: 70%;
+  background-color: #f2f2f2;
+}
+
+.right-section {
+  width: 30%;
+  background-color: #e0e0e0;
+}
+
+#armor>div.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#armor .mech_hp {
+  width: 100%; /* Make sure the SVGs fill the div horizontally */
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+span.sh {
+  display: none;
+}
+@media (max-width: 500px) {
+  span.ln {
+    display: none;
+  }
+  span.sh {
+    display: initial;
+  }
+}
+@media (max-width: 768px) {
+  .left-section,
+  .right-section {
+    width: 100%;
+  }
+  div.layout section {
+    display: none;
+  }
+  div.layout section.visible-section {
+    display: block;
+  }
+
+  .layout {
+    flex-direction: column;
+  }
+}
+
+/** Section selector **/
+.select-section {
+  display: none;
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+}
+
+@media (max-width: 768px) {
+  .select-section {
+    display: flex;
+  }
+}
+
+.select-section>div {
+  flex: 1;
+  line-height: 1;
+  padding: 0.2em;
+  margin: 5px; /* Adjust the margin as needed */
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  display: flex; /* Enable nested flexbox layout */
+  align-items: center; /* Center content vertically */
+  justify-content: center; /* Center content horizontally */
+}

@@ -47,11 +47,13 @@ struct RangeLimits
   constexpr range& mid() { return penaltyRanges[1]; }
   constexpr range& lng() { return penaltyRanges[2]; }
   constexpr range& ext() { return penaltyRanges[3]; }
+  constexpr range& min() { return minRange; }
   constexpr const range& sht() const { return penaltyRanges[0]; }
   constexpr const range& med() const { return penaltyRanges[1]; }
   constexpr const range& mid() const { return penaltyRanges[1]; }
   constexpr const range& lng() const { return penaltyRanges[2]; }
   constexpr const range& ext() const { return penaltyRanges[3]; }
+  constexpr const range& min() const { return minRange; }
 #pragma endregion
 
   /*

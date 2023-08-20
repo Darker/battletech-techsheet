@@ -55,7 +55,7 @@ struct Component
   }
   constexpr bool isHeatsink() const
   {
-    return heat_removed > 0;
+    return heatRemoved > 0;
   }
   constexpr bool isAmmo() const
   {
@@ -93,7 +93,7 @@ struct Component
 #pragma endregion
 
 #pragma region heatsink
-  heat heat_removed{ 0 };
+  heat heatRemoved{ 0 };
 #pragma endregion
 
 #pragma region jump_jet

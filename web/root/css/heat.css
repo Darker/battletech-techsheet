@@ -1,0 +1,48 @@
+table.heat {
+  border-collapse: collapse;
+  font-size: 0.8em;
+}
+table.heat td{
+  margin: 0px;
+  padding: 0.1em;
+  width: 1.8em;
+  height: 1em;
+
+  text-align: center;
+
+  
+}
+table.heat td div {
+  border: 1px solid black;
+  padding: 0.05em;
+  background-color: white;
+}
+
+table.heat td.overheat{
+  padding: 0.1em;
+}
+
+table.heat td.overheat div {
+  border-width: 1.2px;
+  border-radius: 25%;
+  padding: 0.2em;
+}
+
+section#internal .container {
+  display: flex;
+  align-items: flex-start; /* Align items at the top of the container */
+}
+section#internal .container object {
+  width: 100%;
+  max-width: 400px;
+}
+
+
+section#internal div.internal-other {
+  flex: 1; /* Allow the div to flex and take available space */
+  padding: 10px;
+}
+
+section#internal table.heat {
+  margin-left: 10px; /* Add some space between the div and the table */
+}

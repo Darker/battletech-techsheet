@@ -123,6 +123,10 @@ struct Mech
   {
     return make_filtered(components, &pred::is_usable);
   }
+  auto workingComponents() const
+  {
+    return make_filtered(components, &pred::is_usable);
+  }
   auto validHeatsinks() const
   {
     return make_filtered(components, &pred::is_heatsink, &pred::is_usable);
@@ -215,7 +219,7 @@ struct Mech
     heat power = internalHeatSinks;
     for (const auto& comp : validHeatsinks())
     {
-      power += comp.heat_removed;
+      power += comp.heatRemoved;
     }
     return power;
   }
@@ -224,6 +228,16 @@ struct Mech
   {
     heat power = heatSinkCount();
     return doubleHeatSinks ? heat::forced_cast(2 * power.value) : power;
+  }
+
+  jump_power totalJumpPower() const
+  {
+    jump_power res{ 0 };
+    for (const auto& cmp : workingComponents())
+    {
+      res += cmp.jump;
+    }
+    return res;
   }
 
   DamageResult processDamage(IncomingDamage dmg)
