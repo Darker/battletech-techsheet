@@ -150,14 +150,34 @@ constexpr bool isArmSegment(Armor segment)
   return isArmSegment(toInternal(segment));
 }
 
-constexpr bool isAppendageSegment(Internal segment)
+constexpr bool isLimbSegment(Internal segment)
 {
   return isArmSegment(segment) || isLegSegment(segment);
+}
+
+constexpr bool isLimbSegment(Armor segment)
+{
+  return isLimbSegment(toInternal(segment));
+}
+
+constexpr bool isAppendageSegment(Internal segment)
+{
+  return isArmSegment(segment) || isLegSegment(segment) || segment == Internal::HEAD;
 }
 
 constexpr bool isAppendageSegment(Armor segment)
 {
   return isAppendageSegment(toInternal(segment));
+}
+
+constexpr bool isSideTorso(Internal segment)
+{
+  return segment == Internal::LT || segment == Internal::RT;
+}
+
+constexpr bool hasRearArmor(Internal segment)
+{
+  return isSideTorso(segment) || segment == Internal::CT;
 }
 
 inline constexpr std::string_view segmentName(Internal a)

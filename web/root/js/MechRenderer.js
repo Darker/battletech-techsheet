@@ -42,6 +42,8 @@ class MechRenderer {
         this.armor = {};
 
         this.stagedDamage = {};
+        /** @type {{[component:number]:number}} number of crits taken in that component **/
+        this.thisRoundCrit = {};
         this.pendingCritical = null;
     }
     init() {
@@ -79,10 +81,17 @@ class MechRenderer {
             /** @type {HTMLElement} **/
             const tgt = e.target;
             if(tgt.hasAttribute("data-crit-roll")) {
-                this.dealCritical(tgt.getAttribute("data-crit-part"), tgt.getAttribute("data-crit-roll")*1);
+                this.dealCritical(
+                    tgt.getAttribute("data-crit-part"),
+                    tgt.getAttribute("data-crit-roll")*1,
+                    tgt.getAttribute("data-crit-component")*1
+                );
             }
             else if(tgt.hasAttribute("data-crit-skip")) {
-                this.skipCritical();
+                this.endCritical();
+            }
+            else if(tgt.getAttribute("data-destroy-limb") == "crit") {
+                this.destroyLimbCritical();
             }
         });
         document.getElementById("weapon-list").addEventListener("click", (e)=>{
@@ -156,21 +165,36 @@ class MechRenderer {
             this.updateAll();
         }
     }
-
-    dealCritical(segment, critLoc) {
+    /**
+     * 
+     * @param {string} segment 
+     * @param {number} critLoc 
+     * @param {number} componentId 
+     */
+    dealCritical(segment, critLoc, componentId) {
         const res = this.techsheet.receiveCrit(segment, critLoc);
         if(res.invalid) {
             console.error("Invalid roll ",segment, critLoc)
         }
         else {
-            document.body.classList.remove("pending-crit-"+segment);
-            this.pendingCritical = null;
+            if(typeof this.thisRoundCrit[componentId] != "number") {
+                this.thisRoundCrit[componentId] = 0;
+            }
+            this.thisRoundCrit[componentId]++;
             this.updateAll();
         }
     }
-    skipCritical() {
+    destroyLimbCritical() {
+        this.techsheet.destroyAppendage(this.pendingCritical, true);
+        this.endCritical();
+    }
+    /**
+     * End the phase of resolving a critical hit
+     */
+    endCritical() {
+        document.body.classList.remove("pending-crit-"+this.pendingCritical);
         this.pendingCritical = null;
-        this.updateCritical();
+        this.updateAll();
     }
     selectWeaponAmmo(weaponId) {
         throw new Error("Ammo selection not implemented yet.");
@@ -272,6 +296,7 @@ class MechRenderer {
         while(list.firstChild) {
             list.removeChild(list.firstChild);
         }
+        list.classList.remove("is-limb");
 
         if(this.pendingCritical) {
             
@@ -283,6 +308,10 @@ class MechRenderer {
             }
             else {
                 document.body.classList.add("pending-crit", "pending-crit-"+this.pendingCritical);
+
+                if(this.pendingCritical == "HEAD" || this.pendingCritical.endsWith("L") || this.pendingCritical.endsWith("A")) {
+                    list.classList.add("is-limb");
+                }
 
                 for(const opt of opts) {
                     const row = document.createElement("tr");
@@ -299,23 +328,43 @@ class MechRenderer {
                     const critButton = document.createElement("input");
                     //fireButton.addEventListener("click", ())
                     critButton.value = "Crit";
+                    if(typeof this.thisRoundCrit[opt.component] == "number") {
+                        critButton.value += " ("+this.thisRoundCrit[opt.component]+")";
+                    }
                     critButton.type = "button";
                     critButton.setAttribute("data-crit-part", pos);
                     critButton.setAttribute("data-crit-roll", opt.range.min);
+                    critButton.setAttribute("data-crit-component", opt.component);
                     row.appendChild(cellFromElm(critButton));
                     list.append(row);
                 }
-                const rowSkip = document.createElement("tr");
-                const skipButton = document.createElement("input");
-                //fireButton.addEventListener("click", ())
-                skipButton.value = "Skip critical";
-                skipButton.type = "button";
-                skipButton.setAttribute("data-crit-skip", "skip");
-                const cell = cellFromElm(skipButton)
-                cell.colSpan = 4;
-                cell.classList.add("skip-crit");
-                rowSkip.appendChild(cell);
-                list.append(rowSkip);
+                const finalRow = document.createElement("tr");
+                
+                // end dealing crits
+                {
+                    
+                    const skipButton = document.createElement("input");
+                    //fireButton.addEventListener("click", ())
+                    skipButton.value = "Done";
+                    skipButton.type = "button";
+                    skipButton.setAttribute("data-crit-skip", "skip");
+                    const cell = cellFromElm(skipButton)
+                    cell.colSpan = 3;
+                    cell.classList.add("skip-crit");
+                    finalRow.appendChild(cell);
+                }
+                // limb destruction
+                {
+                    const limbButton = document.createElement("input");
+                    //fireButton.addEventListener("click", ())
+                    limbButton.value = "DESTROY ALL";
+                    limbButton.type = "button";
+                    limbButton.setAttribute("data-destroy-limb", "crit");
+                    const cell = cellFromElm(limbButton)
+                    cell.classList.add("destroy-limb");
+                    finalRow.appendChild(cell);
+                }
+                list.append(finalRow);
             }
         }
         else {
@@ -323,6 +372,7 @@ class MechRenderer {
         }
     }
     endTurn() {
+        this.thisRoundCrit = {};
         this.techsheet.endTurn();
         this.updateAll();
     }
