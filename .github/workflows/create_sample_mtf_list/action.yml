@@ -1,0 +1,27 @@
+name: Generate File List
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate-file-list:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Generate file list
+      run: |
+        # Specify the directory for which you want to generate the file list
+        DIRECTORY_PATH="./test_data/*.mtf"
+        
+        # List all files in the specified directory and output as JSON
+        find $DIRECTORY_PATH -type f > ./web/root/sample_file_names.txt
+    # - name: Commit
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: file-list
+    #     path: file-list.json
