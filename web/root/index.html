@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/sections.css">
     <link rel="stylesheet" href="css/heat.css">
     <link rel="stylesheet" href="css/weapons.css">
+    <link rel="stylesheet" href="css/crit.css">
     <title>Techsheet</title>
 </head>
 
@@ -15,12 +16,12 @@
     <div class="select-section">
         <div data-show="weapons">Weapons</div>
         <div data-show="armor">Armor</div>
-        <div data-show="crit">Criticals</div>
+        <div data-show="crit" class="select-crit">Criticals</div>
         <div data-show="internal">Internal</div>
     </div>
     <div class="layout">
         <section id="weapons" class="left-section visible-section">
-            <input type="file" id="mtffile" accept=".mtf">
+            <input type="file" id="mtffile" accept=".mtf"><button id="next-turn" type="button">Next turn</button>
             <h1>Piloting</h1>
             <table>
                 <thead>
@@ -47,7 +48,7 @@
                     <tr><td>Type</td><td>Loc</td><td>Ht</td><td>Dmg</td><td>Min</td><td>Sh</td><td>Md</td><td>Lng</td><td><span class="ln">Ammo</span><span class="sh">Am</span></td><td><span class="ln">Base roll</span><span class="sh">Roll</span></td><td></td></tr>
                 </thead>
                 <tbody id="weapon-list">
-                    <tr><td>MLASER</td><td>LA</td><td>3</td><td>5</td><td>0</td><td>3</td><td>6</td><td>9</td><td>0</td><td>0</td><td><input type="button" value="FIRE"/></td></tr>
+                    <tr><td>MLASER</td><td>LA</td><td>3</td><td>5</td><td>0</td><td>3</td><td>6</td><td>9</td><td>0</td><td>0</td><td><input class="fire" type="button" value="FIRE"/></td></tr>
                 </tbody>
             </table>
         </section>
@@ -67,7 +68,14 @@
             </div>
         </section>
         <section id="crit" class="left-section">
-            
+            <div class="container">
+                <table id="crit-location-table">
+                    <thead><th>desc</th><th>Pt</th><th>dice</th><th></th></thead>
+                    <tbody id="crit-locations">
+
+                    </tbody>
+                </table>
+            </div> 
         </section>
         <section id="internal" class="right-section">
             <div class="container">

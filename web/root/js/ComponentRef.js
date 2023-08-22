@@ -41,6 +41,10 @@ class ComponentRef {
     get position() {
         return this.readComponent(x=>x.position);
     }
+    /** @type {string} **/
+    get description() {
+        return this.readComponent(x=>x.description);
+    }
     isWeapon() {
         return this.readComponent(x=>x.isWeapon());
     }

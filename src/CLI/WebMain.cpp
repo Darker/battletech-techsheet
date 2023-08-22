@@ -6,9 +6,13 @@
 
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
+#include "web/DamageResult_wrapper.h"
 #include "web/optional_wrapper.h"
 #include "web/number_ish_wrapper.h"
+#include "web/component_util.h"
+#include "string_descriptions.h"
 
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
@@ -21,6 +25,14 @@ using namespace techsheet;
 using namespace emscripten;
 
 static Mech globalMech;
+
+class NotImplementedError : public std::runtime_error
+{
+public:
+  NotImplementedError(std::string_view name) 
+    : std::runtime_error(std::string("Not implemented: ") + std::string{ name })
+  {}
+};
 
 
 extern "C"
@@ -70,25 +82,6 @@ extern "C"
     return false;
   }
 
-  EMSCRIPTEN_KEEPALIVE bool receiveDamage(const char* partName, int hits, bool staging = false)
-  {
-    const auto segment = Armor_getValue(partName);
-    if (segment.has_value())
-    {
-      IncomingDamage d{ damage::forced_cast(hits), segment.value(), false, staging };
-      if (staging)
-      {
-        globalMech.structure.receiveDamage(d);
-      }
-      else
-      {
-        globalMech.processDamage(d);
-      }
-      
-      return true;
-    }
-    return false;
-  }
   EMSCRIPTEN_KEEPALIVE void unstageDamage()
   {
     globalMech.structure.unstage();
@@ -101,6 +94,7 @@ extern "C"
     {
       Mech tmp = mtfparser::MtfParser::parse(iss);
       globalMech = tmp;
+      globalMech.autoSelectAllWeaponAmmo();
       return true;
     }
     catch (const mtfparser::ParseException& e)
@@ -113,6 +107,12 @@ extern "C"
   EMSCRIPTEN_KEEPALIVE int getTotalJumpPower()
   {
     return globalMech.totalJumpPower().value;
+  }
+
+  EMSCRIPTEN_KEEPALIVE void endTurn()
+  {
+    globalMech.destroyPendingComponents();
+    globalMech.reduceHeat();
   }
 }
 
@@ -132,7 +132,7 @@ EMSCRIPTEN_KEEPALIVE SegmentHealth getHealthInternal(emscripten::val v)
   if (v.isString())
   {
     const auto partName = v.as<std::string>();
-    std::cout << "getHealthInternal(\"" << partName << ");\n";
+    //std::cout << "getHealthInternal(\"" << partName << ");\n";
     const auto segment = Internal_getValue(partName);
     if (segment.has_value())
     {
@@ -145,13 +145,41 @@ EMSCRIPTEN_KEEPALIVE SegmentHealth getHealthInternal(emscripten::val v)
 
 EMSCRIPTEN_KEEPALIVE SegmentHealth getHealthArmor(const std::string partName)
 {
-  std::cout << "getHealthArmor(\"" << partName << ");\n";
+  //std::cout << "getHealthArmor(\"" << partName << ");\n";
   const auto segment = Armor_getValue(partName);
   if (segment.has_value())
   {
     return globalMech.structure[segment.value()];
   }
   return SegmentHealth();
+}
+
+DamageResult receiveDamage(std::string partName, int hits, bool staging = false)
+{
+  const auto segment = Armor_getValue(partName);
+  if (segment.has_value())
+  {
+    IncomingDamage d{ damage::forced_cast(hits), segment.value(), false, staging };
+    if (staging)
+    {
+      return globalMech.structure.receiveDamage(d);
+    }
+    else
+    {
+      return globalMech.processDamage(d);
+    }
+  }
+  return {};
+}
+
+std::vector<CritRollOption> getCritOptions(std::string partName)
+{
+  const auto segment = Internal_getValue(partName);
+  if (segment.has_value())
+  {
+    return globalMech.getCritOptions(segment.value());
+  }
+  return {};
 }
 
 EMSCRIPTEN_KEEPALIVE std::vector<int> getComponents()
@@ -188,6 +216,23 @@ EMSCRIPTEN_KEEPALIVE std::optional<Component> getComponent(int id)
   return std::nullopt;
 }
 
+//std::string describeComponent(int id)
+//{
+//  for (const auto& c : globalMech.components)
+//  {
+//    if (id == c.id.value)
+//    {
+//      return c;
+//    }
+//  }
+//  return std::nullopt;
+//}
+
+std::string describeLiveComponent(const Component& c)
+{
+  return stringifyComponent(globalMech, c);
+}
+
 EMSCRIPTEN_KEEPALIVE std::optional<Weapon> getWeapon(int id)
 {
   for (const auto& c : globalMech.weapons)
@@ -198,6 +243,43 @@ EMSCRIPTEN_KEEPALIVE std::optional<Weapon> getWeapon(int id)
     }
   }
   return std::nullopt;
+}
+
+struct CritRollResultSimple
+{
+  int component = 0;
+  bool rollAgain = false;
+  bool invalid = false;
+
+  CritRollResultSimple() {}
+  CritRollResultSimple(bool rollAgainParam, int componentParam, bool invalid = false)
+    : component(componentParam), rollAgain(rollAgainParam), invalid{invalid}
+  {}
+
+  CritRollResultSimple(const CritRollResult& r)
+    : component(r.destroyedCmp.value), rollAgain(r.rollAgain)
+  {}
+};
+
+CritRollResultSimple receiveCrit(std::string partName, byte critPos, bool execute)
+{
+  const auto segment = Internal_getValue(partName);
+  if (segment.has_value())
+  {
+    return globalMech.receiveCrit(segment.value(), critPos, execute);
+  }
+  return { 0, false, true };
+}
+
+bool fireWeapon(int id)
+{
+  const auto weapon = getWeapon(id);
+  if (weapon.has_value())
+  {
+    throw NotImplementedError("fireWeapon()");
+    return true;
+  }
+  return false;
 }
 
 struct WeaponHelper
@@ -223,49 +305,7 @@ struct WeaponHelper
   }
 };
 
-struct ComponentHelper
-{
-  static emscripten::val getId(
-    const Component& v)
-  {
-    return emscripten::val((int)v.id.value);
-  }
-  static emscripten::val getAmmoType(const Component& v)
-  {
-    return emscripten::val(std::string(Ammo_getName(v.ammoType)));
-  }
-  static emscripten::val getName(const Component& v)
-  {
-    return emscripten::val(std::string(v.name.view()));
-  }
-  static emscripten::val getPosition(const Component& v)
-  {
-    return emscripten::val(std::string(Internal_getName(v.position)));
-  }
-};
 
-template <typename NumberIshImp>
-struct NumberIshHelper
-{
-  static emscripten::val getValue(const NumberIshImp& n)
-  {
-    return emscripten::val((int)n.value);
-  }
-  static emscripten::val isNumberIsh(const NumberIshImp&)
-  {
-    return emscripten::val(true);
-  }
-};
-
-template<typename NumberIshImp>
-class_<NumberIshImp> register_number_ish(const char* name)
-{
-  return class_<NumberIshImp>(name)
-    .template constructor<typename NumberIshImp::base_type>()
-    .property("value", &NumberIshHelper<NumberIshImp>::getValue)
-    .property("isNumberIsh", &NumberIshHelper<NumberIshImp>::isNumberIsh)
-    ;
-}
 
 // my_number_value.h
 struct my_number_value
@@ -324,21 +364,36 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
   register_number_ish<health>("health");
   register_number_ish<damage>("damage");
   register_number_ish<range>("range");
+  register_number_ish<component_id>("component_id");
 
   class_<Weapon>("Weapon")
     .constructor<>()
     .function("totalDamage", &Weapon::totalDamage)
     .property("heatCaused", &WeaponHelper::getHeatCaused, &WeaponHelper::setHeatCaused)
     .property("component", &WeaponHelper::getComponent)
+    .property("ammoBin", &Weapon::ammoBin)
     .property("name", &WeaponHelper::getName)
     .property("ranges", &Weapon::ranges)
+    .property("usesAmmo", &Weapon::usesAmmo)
+    .property("lacksAmmo", &Weapon::lacksAmmo)
+    .property("fired", &Weapon::fired)
+    ;
+
+  class_<DamageResult>("DamageResult")
+    .constructor<>()
+    .property("criticalHit", &DamageResult::criticalHit)
+    .property("criticalSegment", &DamageResult_wrapper::getCriticalSegment)
+    .property("mechDestroyed", &DamageResult::mechDestroyed)
+    .property("partDestroyed", &DamageResult::partDestroyed)
+    .property("psrRequired", &DamageResult::psrRequired)
     ;
 
   enum_<RangeLimits::Type>("RangeType")
     .value("SHORT", RangeLimits::Type::SHORT)
     .value("MEDIUM", RangeLimits::Type::MEDIUM)
     .value("LONG", RangeLimits::Type::LONG)
-    .value("EXTREME", RangeLimits::Type::EXTREME);
+    .value("EXTREME", RangeLimits::Type::EXTREME)
+    ;
 
   class_<RangeLimits>("RangeLimits")
     .constructor<>()
@@ -357,10 +412,11 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
     .function("min", select_overload<const range& () const>(&RangeLimits::min))
     ;
 
-  enum_<Component::Status>("Status")
+  enum_<Component::Status>("Component_Status")
     .value("FINE", Component::Status::FINE)
     .value("LAST_TURN", Component::Status::LAST_TURN)
-    .value("DESTROYED", Component::Status::DESTROYED);
+    .value("DESTROYED", Component::Status::DESTROYED)
+    ;
 
   class_<Component>("Component")
     .constructor<>()
@@ -368,6 +424,7 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
     .function("isDestroyed", &Component::isDestroyed)
     .function("isSpecial", &Component::isSpecial)
     .function("isHealthy", &Component::isHealthy)
+    .function("isUsable", &Component::isUsable)
     .function("isValid", &Component::isValid)
     .function("isHeatsink", &Component::isHeatsink)
     .function("isAmmo", select_overload<bool() const>(&Component::isAmmo))
@@ -375,6 +432,8 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
     .function("isJumpJet", &Component::isJumpJet)
     .function("reset", &Component::reset)
     .property("name", &ComponentHelper::getName)
+    .property("description", &describeLiveComponent)
+    .property("status", &ComponentHelper::getStatus)
     .property("id", &ComponentHelper::getId)
     .property("ammoType", &ComponentHelper::getAmmoType)
     .property("ammo", &Component::ammo)
@@ -384,7 +443,8 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
     .function("ammoExplodes", &Component::ammoExplodes)
     .function("ammoExplosionDamage", &Component::ammoExplosionDamage)
     .property("heatRemoved", &Component::heatRemoved)
-    .property("jump", &Component::jump);
+    .property("jump", &Component::jump)
+    ;
 
   class_<CritRange>("CritRange")
     .constructor<byte, byte>()
@@ -397,15 +457,23 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
     .function("overlaps", &CritRange::overlaps)
     .function("containsIncl", &CritRange::containsIncl)
     .function("nextTo", &CritRange::nextTo)
-    .function("offset", &CritRange::offset);
+    .function("offset", &CritRange::offset)
+    ;
 
+  class_<CritRollOption>("CritRollOption")
+    .constructor<>()
+    .property("range", &CritRollOption::range)
+    .property("component", &CritRollOption::component)
+    .property("alreadyDestroyed", &CritRollOption::alreadyDestroyed)
+    ;
 
-
-  //class_<IncomingDamage>("IncomingDamage")
-  //  .constructor<damage, bool>()
-  //  .function("reduce", &IncomingDamage::reduce)
-  //  .property("dmg", &IncomingDamage::dmg)
-  //  .property("staging", &IncomingDamage::staging);
+  class_<CritRollResultSimple>("CritRollResultSimple")
+    .constructor<>()
+    .constructor<bool, int>()
+    .property("component", &CritRollResultSimple::component)
+    .property("rollAgain", &CritRollResultSimple::rollAgain)
+    .property("invalid", &CritRollResultSimple::invalid)
+    ;
 
   class_<SegmentHealth>("SegmentHealth")
     .constructor<>()
@@ -418,21 +486,27 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
     .function("unstage", &SegmentHealth::unstage)
     .function("destroyed", &SegmentHealth::destroyed)
     .function("destroy", &SegmentHealth::destroy)
-    .function("damaged", &SegmentHealth::damaged);
+    .function("damaged", &SegmentHealth::damaged)
+    ;
 
   function("getInternalNames", &getInternalNames);
   function("getArmorNames", &getArmorNames);
   function("getHealthInternal", &getHealthInternal);
   function("getHealthArmor", &getHealthArmor);
+  function("receiveDamage", &receiveDamage);
   function("getComponents", &getComponents);
   function("getComponent", &getComponent);
   function("getWeapons", &getWeapons);
   function("getWeapon", &getWeapon);
+  function("fireWeapon", &fireWeapon);
+  function("getCritOptions", &getCritOptions);
+  function("receiveCrit", &receiveCrit);
 
   register_optional<Component>("optional<Component>");
   register_optional<Weapon>("optional<Weapon>");
   register_vector<int>("vector<int>");
   register_vector<std::string>("vector<string>");
+  register_vector<CritRollOption>("vector<CritRollOption>");
   register_map<int, std::string>("map<int, string>");
 
   //register_opaque<my_number_value>("my_number_value")

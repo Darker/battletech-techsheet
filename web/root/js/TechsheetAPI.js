@@ -1,7 +1,17 @@
 import ComponentRef from "./ComponentRef.js";
 import WeaponRef from "./WeaponRef.js";
 import { wrapVectorResult } from "./cppWrapUtil.js";
-import { TYPES, cwrap } from "./wasmWrap.js";
+import { TYPES, cwrap, CType } from "./wasmWrap.js";
+
+/**
+ * @typedef {Object} CritOption
+ * @prop {number} component
+ * @prop {{min:number, max: number}} range
+ * @prop {boolean} alreadyDestroyed
+ */
+/** @type {CritOption} **/
+const _CritOption = null;
+const T_CritOption = new CType("CritOption", _CritOption);
 
 class TechsheetAPI {
     constructor(asmModule) {
@@ -12,12 +22,13 @@ class TechsheetAPI {
         this.getStructureArmor = cwrap(asmModule, "getStructureArmor", TYPES.int, TYPES.string);
         this.getInternalNames = wrapVectorResult(asmModule, "getInternalNames", TYPES.string);
         this.getArmorNames = wrapVectorResult(asmModule, "getArmorNames", TYPES.string);
-        this.receiveDamage = cwrap(asmModule, "receiveDamage", TYPES.bool, TYPES.string, TYPES.int, TYPES.bool);
         this.unstageDamage = cwrap(asmModule, "unstageDamage", TYPES.void_t);
         this.getTotalJumpPower = cwrap(asmModule, "getTotalJumpPower", TYPES.int);
         this._parseMech = cwrap(asmModule, "parseMech", TYPES.bool, TYPES.string);
         this.getComponentIds = wrapVectorResult(asmModule, "getComponents", TYPES.int);
         this.getWeaponIds = wrapVectorResult(asmModule, "getWeapons", TYPES.int);
+        this.endTurn = cwrap(asmModule, "endTurn", TYPES.void_t);
+        this._getCritOptions = wrapVectorResult(asmModule, "getCritOptions", T_CritOption, TYPES.string);
     }
 
     /**
@@ -30,6 +41,43 @@ class TechsheetAPI {
         const res = {current: hp.current.value, max: hp.max.value, staging: hp.staging.value};
         hp.delete();
         return res;
+    }
+
+    receiveCrit(partName, diceRoll, execute = true) {
+        const res = this.Module.receiveCrit(partName, diceRoll, execute);
+        const resObj = {component: res.component, invalid: !!res.invalid, rollAgain: !!res.rollAgain};
+        res.delete();
+        return resObj;
+    }
+
+    /**
+     * 
+     * @param {string} partName 
+     * @returns {CritOption[]}
+     */
+    getCritOptions(partName) {
+        console.log("Loading crit options: ", partName);
+        const opts = this._getCritOptions(partName);
+        return opts.map(x=>({component: x.component.value, range: {min: x.range.min, max: x.range.max}, alreadyDestroyed:x.alreadyDestroyed}));
+    }
+    /**
+     * 
+     * @param {string} part 
+     * @param {number} amount 
+     * @param {boolean} staging 
+     * @returns {DamageResult}
+     */
+    receiveDamage(part, amount, staging = false) {
+        const res = this.Module.receiveDamage(part, amount, staging);
+        const resStatus = {
+            criticalHit: res.criticalHit,
+            criticalSegment: res.criticalSegment,
+            mechDestroyed: res.mechDestroyed,
+            partDestroyed: res.partDestroyed,
+            psrRequired: res.psrRequired
+        };
+        res.delete();
+        return resStatus;
     }
 
     *getComponents() {

@@ -1,5 +1,5 @@
-export default function cellFromText(text) {
-    const td = document.createElement("td");
-    td.appendChild(new Text(text));
-    return td;
+import cellFromElm from "./cellFromElm.js";
+
+export default function cellFromText(text, className = "") {
+    return cellFromElm(new Text(text), className);
 }

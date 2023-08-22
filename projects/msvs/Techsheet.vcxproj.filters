@@ -93,6 +93,12 @@
     <ClInclude Include="..\..\include\techsheet\is_safe_numeric_cast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\techsheet\id_defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\techsheet\component_filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\lib\techsheet_lib.cpp">

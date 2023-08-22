@@ -13,13 +13,18 @@ struct CritRollResult final
   SpecialComponent specialHit = SpecialComponent::NOT_SPECIAL;
   bool rollAgain = false;
 
-  bool operator==(const CritRollResult& other) const
+  constexpr bool isValid() const
+  {
+    return specialHit != SpecialComponent::NO_SPECIAL_TYPES;
+  }
+
+  constexpr bool operator==(const CritRollResult& other) const
   {
     return destroyedCmp == other.destroyedCmp
       && specialHit == other.specialHit
       && rollAgain == other.rollAgain;
   }
-  bool operator!=(const CritRollResult& other) const
+  constexpr bool operator!=(const CritRollResult& other) const
   {
     return !(*this == other);
   }
@@ -29,6 +34,7 @@ struct CritRollOption final
 {
   CritRange range;
   component_id component{ 0 };
+  bool alreadyDestroyed = false;
 };
 
 namespace crit
