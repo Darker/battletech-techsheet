@@ -1,6 +1,7 @@
 #pragma once
 #ifdef __EMSCRIPTEN__
 #include <optional>
+#include <utility>
 
 #include <emscripten/emscripten.h>
 #include <emscripten/bind.h>
@@ -30,6 +31,14 @@ emscripten::class_<std::optional<V>> register_optional(const char* name)
     .template constructor()
     .function("value", &OptionalAccess<OptionalType>::value)
     .function("has_value", &OptionalAccess<OptionalType>::has_value);
+}
+
+template <typename T1, typename T2>
+emscripten::class_<std::pair<T1, T2>> register_pair(const char* name)
+{
+  return emscripten::class_<std::pair<T1, T2>>(name)
+    .property("first", &std::pair<T1, T2>::first)
+    .property("second", &std::pair<T1, T2>::second);
 }
 
 #endif

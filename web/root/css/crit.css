@@ -16,3 +16,10 @@ td.crit-name
 td.crit-name.destroyed {
   text-decoration: line-through;
 }
+
+tbody#crit-locations td.destroy-limb input {
+  display: none;
+}
+tbody#crit-locations.is-limb td.destroy-limb input {
+  display: initial;
+}

@@ -356,6 +356,50 @@ struct Mech
       }
     }
   }
+
+  /*
+  * Destroys an appendage. If the appendage is destroyed by a critical hit,
+  * the undrelying damage taken does not count towards PSR requirement.
+  * 
+  * Damage taken is sum of limbs armor and internal health.
+  * 
+  * Returns true if the operation had any effect and damage that was caused. The damage is
+  * returned even if this does not count towards PSR.
+  */
+  std::pair<bool, damage> destroyAppendage(Internal limbOrHead, bool causedByCrit)
+  {
+    if (isAppendageSegment(limbOrHead))
+    {
+      auto& internal = structure[limbOrHead];
+      auto& armor = structure[toArmor(limbOrHead)];
+
+      health total = internal.current;
+      total += armor.current;
+
+      armor.current = internal.current = health{ 0 };
+
+      if (!causedByCrit)
+      {
+        damageThisTurn += damage{ total.value };
+      }
+
+      // Mark components as destrouyed
+      for (auto& c : componentsAt(limbOrHead))
+      {
+        c.status = Component::Status::LAST_TURN;
+        if (c.isSpecial())
+        {
+          c.specialHits++;
+        }
+      }
+
+      return { true, damage{total.value} };
+    }
+    else
+    {
+      return { false, damage{0} };
+    }
+  }
   
   std::vector<CritRollOption> getCritOptions(Internal segment, bool autoTransfer = false) const
   {

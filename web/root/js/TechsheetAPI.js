@@ -53,6 +53,21 @@ class TechsheetAPI {
     /**
      * 
      * @param {string} partName 
+     * @param {boolean} fromCritical if caused by a critical hit
+     * @returns 
+     */
+    destroyAppendage(partName, fromCritical) {
+        const res = this.Module.destroyAppendage(partName, fromCritical);
+        const resObj = {success: res.first, damage: res.second.value};
+        res.delete();
+        if(!resObj.success) {
+            console.warn(`Invalid limb destruction at ${partName}`)
+        }
+        return resObj;
+    }
+    /**
+     * 
+     * @param {string} partName 
      * @returns {CritOption[]}
      */
     getCritOptions(partName) {

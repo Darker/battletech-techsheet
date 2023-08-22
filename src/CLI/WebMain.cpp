@@ -271,6 +271,16 @@ CritRollResultSimple receiveCrit(std::string partName, byte critPos, bool execut
   return { 0, false, true };
 }
 
+std::pair<bool, damage> destroyAppendage(std::string partName, bool byCrit)
+{
+  const auto segment = Internal_getValue(partName);
+  if (segment.has_value())
+  {
+    return globalMech.destroyAppendage(segment.value(), byCrit);
+  }
+  return { false, damage{0} };
+}
+
 bool fireWeapon(int id)
 {
   const auto weapon = getWeapon(id);
@@ -501,6 +511,7 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
   function("fireWeapon", &fireWeapon);
   function("getCritOptions", &getCritOptions);
   function("receiveCrit", &receiveCrit);
+  function("destroyAppendage", &destroyAppendage);
 
   register_optional<Component>("optional<Component>");
   register_optional<Weapon>("optional<Weapon>");
@@ -508,7 +519,7 @@ EMSCRIPTEN_BINDINGS(techsheetweb)
   register_vector<std::string>("vector<string>");
   register_vector<CritRollOption>("vector<CritRollOption>");
   register_map<int, std::string>("map<int, string>");
-
+  register_pair<bool, damage>("pair<bool, damage>");
   //register_opaque<my_number_value>("my_number_value")
   //  .constructor<int>()
   //  .conversion(&my_number_value_to_val, &val_to_my_number_value);
