@@ -11,6 +11,7 @@ runs:
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Generate file list
+      shell: bash
       run: |
         # Specify the directory for which you want to generate the file list
         DIRECTORY_PATH="./test_data/*.mtf"
