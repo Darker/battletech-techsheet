@@ -4,7 +4,8 @@ name: Deploy static content to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: [$default-branch]
+    branches:
+      - master
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -33,11 +34,24 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Pages
         uses: actions/configure-pages@v3
+      - name: Create mtf file list
+        uses: ./.github/actions/create_sample_mtf_list
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          # Upload entire repository
+          # Upload web root
           path: './web/root'
+
+      # - name: Upload file list
+      #   uses: actions/upload-pages-artifact@v2
+      #   with:
+      #     # Upload the list of sample MTF files
+      #     path: 'sample_file_names.txt'
+      # - name: Upload file list
+      #     uses: actions/upload-pages-artifact@v2
+      #     with:
+      #       # Upload the list of sample MTF files
+      #       path: 'sample_file_names.txt'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2

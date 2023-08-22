@@ -45,6 +45,9 @@ class ComponentRef {
     get description() {
         return this.readComponent(x=>x.description);
     }
+    isDestroyed() {
+        return this.readComponent(x=>x.isDestroyed());
+    }
     isWeapon() {
         return this.readComponent(x=>x.isWeapon());
     }
