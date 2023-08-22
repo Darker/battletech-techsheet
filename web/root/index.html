@@ -22,6 +22,9 @@
     <div class="layout">
         <section id="weapons" class="left-section visible-section">
             <input type="file" id="mtffile" accept=".mtf"><button id="next-turn" type="button">Next turn</button>
+            <div id="sample-file-loader" style="display:none">
+                Sample files: <select id="sample-file-options"></select><button type="button">Load</button>
+            </div>
             <h1>Piloting</h1>
             <table>
                 <thead>
@@ -138,6 +141,30 @@
         document.querySelector("#commitDmg").addEventListener("click", function() {
             window.dispatchEvent(new CustomEvent("techsheet-dmg-commit"));
         });
+        (async ()=>{
+            const res = await fetch("sample_file_names.txt");
+            if(res.ok) {
+                const text = await res.text();
+                const files = text.split(/\r?\n/g).map(x=>x.replace("./", ""));
+                const optsdiv = document.querySelector("#sample-file-loader");
+                optsdiv.style.display = "";
+                const opts = document.querySelector("#sample-file-options");
+
+                optsdiv.querySelector("button").addEventListener("click", async function() {
+                    const f = await fetch(opts.value);
+                    if(f.ok) {
+                        const text = await f.text();
+                        window.dispatchEvent(new CustomEvent("techsheet-parse",{ detail: text}));
+                    }
+                });
+                for(const file of files) {
+                    const opt = document.createElement("option");
+                    opt.appendChild(new Text(file));
+                    opt.value = "sample_files/"+file;
+                    opts.append(opt);
+                }                
+            }
+        })();
     </script>
 </body>
 

@@ -14,11 +14,11 @@ runs:
       shell: bash
       run: |
         # Specify the directory for which you want to generate the file list
-        DIRECTORY_PATH="./test_data/*.mtf"
+        DIRECTORY_PATH="./test_data/"
         REPO_ROOT=$(realpath .)
         cd $DIRECTORY_PATH
         # List all files in the specified directory and output as JSON
-        find . -type f > $REPO_ROOT/web/root/sample_file_names.txt
+        find ./*.mtf -type f > $REPO_ROOT/web/root/sample_file_names.txt
         mkdir $REPO_ROOT/web/root/sample_files/
         cp *.mtf $REPO_ROOT/web/root/sample_files/
 

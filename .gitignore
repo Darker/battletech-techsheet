@@ -15,3 +15,6 @@ output/
 build/*
 .cache/*
 .compile_commands.json
+
+web/root/sample_file_names.txt
+web/root/sample_files/*
