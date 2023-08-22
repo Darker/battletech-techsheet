@@ -35,7 +35,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Create mtf file list
-        uses: ./.github/actions/create_sample_mtf_list.yml
+        uses: ./.github/actions/create_sample_mtf_list
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
