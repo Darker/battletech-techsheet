@@ -39,6 +39,8 @@ struct Weapon
   bool isRear = false;
   // when component is destroyed
   bool explodes = false;
+  // Set to true when the weapon was fired
+  bool fired = false;
 
   constexpr bool lacksAmmo() const
   {

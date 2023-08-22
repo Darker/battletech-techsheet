@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/sections.css">
+    <link rel="stylesheet" href="css/heat.css">
+    <link rel="stylesheet" href="css/weapons.css">
+    <link rel="stylesheet" href="css/crit.css">
+    <title>Techsheet</title>
+</head>
+
+<body>
+    <script type="module" src="js/techsheetMain.js" async></script>
+    <div class="select-section">
+        <div data-show="weapons">Weapons</div>
+        <div data-show="armor">Armor</div>
+        <div data-show="crit" class="select-crit">Criticals</div>
+        <div data-show="internal">Internal</div>
+    </div>
+    <div class="layout">
+        <section id="weapons" class="left-section visible-section">
+            <input type="file" id="mtffile" accept=".mtf"><button id="next-turn" type="button">Next turn</button>
+            <h1>Piloting</h1>
+            <table>
+                <thead>
+                    <tr><td>Gunnery</td><td>Piloting</td></tr>
+                </thead>
+                <tbody>
+                    <tr><td>X</td><td>X</td></tr>
+                </tbody>
+            </table>
+            <table>
+                <tr><td>Hits:</td><td>3+</td><td>5+</td><td>7+</td><td>10+</td><td>11+</td><td>KO</td></tr>
+            </table>
+            <table>
+                <thead>
+                    <tr><td>Walk</td><td>Run</td><td>Jump</td><td>Kick</td><td>LPunch</td><td>RPunch</td><td>DFA</td><td>CHRG</td></tr>
+                </thead>
+                <tbody>
+                    <tr><td>X</td>    <td>X</td> <td class="movement-jump-power">X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td></tr>
+                </tbody>
+            </table>
+            <h1>Weapons</h1>
+            <table class="weapons">
+                <thead>
+                    <tr><td>Type</td><td>Loc</td><td>Ht</td><td>Dmg</td><td>Min</td><td>Sh</td><td>Md</td><td>Lng</td><td><span class="ln">Ammo</span><span class="sh">Am</span></td><td><span class="ln">Base roll</span><span class="sh">Roll</span></td><td></td></tr>
+                </thead>
+                <tbody id="weapon-list">
+                    <tr><td>MLASER</td><td>LA</td><td>3</td><td>5</td><td>0</td><td>3</td><td>6</td><td>9</td><td>0</td><td>0</td><td><input class="fire" type="button" value="FIRE"/></td></tr>
+                </tbody>
+            </table>
+        </section>
+        <section id="armor" class="right-section">
+            <div>Armor</div>
+            <div class="container">
+                <object id="SVG_ARMOR_FRONT" data="img/mech_armor_front.svg" class="mech_hp"></object>
+                <div>
+                    <span>Damage: <span class="damage-target-name">NONE</span></span>
+                    <input type="button" value="+1" class="dmgButton" />
+                    <input type="button" value="+2" class="dmgButton" />
+                    <input type="button" value="+5" class="dmgButton" />
+                    <input type="button" value="CANCEL" id="cancelDmg" />
+                    <input type="button" value="OK" id="commitDmg" />
+                  </div>
+                <object id="SVG_REAR" data="img/mech_armor_rear.svg" data-dotsize="1.3" class="mech_hp"></object>
+            </div>
+        </section>
+        <section id="crit" class="left-section">
+            <div class="container">
+                <table id="crit-location-table">
+                    <thead><th>desc</th><th>Pt</th><th>dice</th><th></th></thead>
+                    <tbody id="crit-locations">
+
+                    </tbody>
+                </table>
+            </div> 
+        </section>
+        <section id="internal" class="right-section">
+            <div class="container">
+                <div class="internal-other">
+                    <object id="SVG_INTERNAL" data="img/mech_internal.svg" data-dotsize="0.9" class="mech_hp"></object>
+                </div>
+                <!-- Heat -->
+                <table class="heat"><tbody><tr><td class="overheat"><div><span>&nbsp;</span></div></td></tr><tr><td><div><span>30</span></div></td></tr><tr><td><div><span>29</span></div></td></tr><tr><td><div><span>28</span></div></td></tr><tr><td><div><span>27</span></div></td></tr><tr><td><div><span>26</span></div></td></tr><tr><td><div><span>25</span></div></td></tr><tr><td><div><span>24</span></div></td></tr><tr><td><div><span>23</span></div></td></tr><tr><td><div><span>22</span></div></td></tr><tr><td><div><span>21</span></div></td></tr><tr><td><div><span>20</span></div></td></tr><tr><td><div><span>19</span></div></td></tr><tr><td><div><span>18</span></div></td></tr><tr><td><div><span>17</span></div></td></tr><tr><td><div><span>16</span></div></td></tr><tr><td><div><span>15</span></div></td></tr><tr><td><div><span>14</span></div></td></tr><tr><td><div><span>13</span></div></td></tr><tr><td><div><span>12</span></div></td></tr><tr><td><div><span>11</span></div></td></tr><tr><td><div><span>10</span></div></td></tr><tr><td><div><span>9</span></div></td></tr><tr><td><div><span>8</span></div></td></tr><tr><td><div><span>7</span></div></td></tr><tr><td><div><span>6</span></div></td></tr><tr><td><div><span>5</span></div></td></tr><tr><td><div><span>4</span></div></td></tr><tr><td><div><span>3</span></div></td></tr><tr><td><div><span>2</span></div></td></tr><tr><td><div><span>1</span></div></td></tr><tr><td><div><span>0</span></div></td></tr></tbody></table>
+            </div>
+        </section>
+    </div>
+    <script>
+        console.log(document.querySelector("object").contentDocument)
+        document.querySelector(".select-section").addEventListener("click", function(e) {
+            /** @type {HTMLElement} **/
+            const tgt = e.target;
+            if(tgt.hasAttribute("data-show")) {
+                const section = tgt.getAttribute("data-show");
+                const current = document.querySelectorAll(".visible-section");
+                for(const x of current) {
+                    x.classList.remove("visible-section");
+                }
+                document.getElementById(section).classList.add("visible-section");
+            }
+        });
+
+        document.getElementById("mtffile").addEventListener("input", function(e) {
+          /** @type {File} **/
+          var file = this.files[0];
+          console.log("Parsing mech from", file)
+          if (file) {
+            var reader = new FileReader();
+            reader.onload = function (evt) {
+              //const res = parseMech(evt.target.result);
+              //console.log("Parse result: ", res);
+              //updateHealth();
+              window.dispatchEvent(new CustomEvent("techsheet-parse",{ detail: evt.target.result}));
+            }
+            reader.onerror = function (evt) {
+              console.error(evt);
+            }
+            reader.readAsText(file, "UTF-8");
+          }
+        });
+
+        /**
+         * @this {HTMLInputElement}
+         * */
+         function addDamage(event) {
+            const amount = this.value.replace("+", "") * 1;
+            console.log("click stage "+amount);
+            window.dispatchEvent(new CustomEvent("techsheet-dmg-stage", {detail: amount}));
+        }
+        for(const x of document.querySelectorAll(".dmgButton")) {
+            x.addEventListener("click", addDamage);
+        }
+        document.querySelector("#cancelDmg").addEventListener("click", function() {
+            window.dispatchEvent(new CustomEvent("techsheet-dmg-unstage"));
+        });
+        document.querySelector("#commitDmg").addEventListener("click", function() {
+            window.dispatchEvent(new CustomEvent("techsheet-dmg-commit"));
+        });
+    </script>
+</body>
+
+</html>

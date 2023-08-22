@@ -1,0 +1,31 @@
+
+@media (max-width: 400px) {
+  table.weapons {
+    font-size: calc(0.4em + 1.5vw);
+  }
+}
+
+table.weapons tr.status-LAST_TURN td.name {
+  text-decoration: line-through;
+}
+table.weapons tr.status-DESTROYED {
+  color: red;
+  background-color: black;
+}
+
+table.weapons button.fire, table.weapons input.fire {
+  border: 1px solid black;
+  background-color: #ffffff;
+  cursor: pointer;
+  color:black;
+}
+table.weapons button.fire:hover, table.weapons input.fire:hover {
+  background-color: #c7c7c7;
+}
+table.weapons tr.fired button.fire, table.weapons tr.fired input.fire {
+  background-color: #970000;
+  color: white;
+}
+table.weapons tr.fired button.fire:hover, table.weapons tr.fired input.fire:hover {
+  background-color: #b90000;
+}

@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="105.92036mm"
-   height="159.077mm"
-   viewBox="0 0 105.92036 159.077"
+   width="105.36288mm"
+   height="125.03878mm"
+   viewBox="0 0 105.3629 125.03878"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="316.44646"
-     inkscape:cy="330.60871"
+     inkscape:zoom="1.979899"
+     inkscape:cx="205.8036"
+     inkscape:cy="330.04061"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -57,36 +57,36 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-45.502619,1.6956851)">
+     transform="translate(-46.838968,-8.059653)">
     <rect
        style="fill:#f2f2f2;fill-opacity:0.92424245;stroke:#000000;stroke-width:0.46499997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ARMOR_HEAD"
-       width="28.464207"
-       height="28.063299"
+       width="28.464211"
+       height="18.424906"
        x="87.397133"
-       y="15.832457"
+       y="25.587795"
        inkscape:label="#rect832" />
     <rect
        style="fill:#f2f2f2;fill-opacity:1;stroke:#000000;stroke-width:0.465;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ARMOR_CT"
-       width="24.757435"
-       height="63.688984"
+       width="24.757439"
+       height="50.459816"
        x="89.391365"
        y="44.13393"
        inkscape:label="ARMOR_CT" />
     <path
        style="fill:#19294e;fill-opacity:1;stroke:none;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 49.514881,104.7991 -0.566965,7.55953 7.181548,3.2128 -0.668174,-2.46635 -3.867541,-3.2033 1.889882,-2.45684 3.258653,4.78006 2.410989,0.5116 -3.212798,-4.91369 4.913691,4.91369 -1.133928,3.2128 4.535713,-3.77976 -3.212796,-3.40179 -3.023812,-4.34672 z"
+       d="m 51.920307,101.3246 -0.566965,7.55953 7.181548,3.2128 -0.668174,-2.46635 -3.867541,-3.2033 1.889882,-2.45684 3.258653,4.78006 2.410989,0.5116 -3.212798,-4.91369 4.913691,4.91369 -1.133928,3.2128 4.535713,-3.77976 -3.212796,-3.40179 -3.023812,-4.34672 z"
        id="path850"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccccccccccccc" />
     <rect
        style="fill:#f2f2f2;fill-opacity:0.92424245;stroke:#000000;stroke-width:0.46499997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ARMOR_LA"
-       width="20.599701"
-       height="58.019348"
-       x="45.735119"
-       y="47.157738"
+       width="19.263357"
+       height="57.885712"
+       x="47.071468"
+       y="43.683235"
        inkscape:label="#rect836" />
     <rect
        style="fill:#f2f2f2;fill-opacity:0.92424245;stroke:#000000;stroke-width:0.46499997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -104,57 +104,57 @@
        y="49.614582" />
     <path
        style="fill:#19294e;fill-opacity:1;stroke:none;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 148.16666,107.63393 2.26786,14.74107 -4.7247,-11.33929 -1.13393,11.33929 -2.64583,-10.58334 -5.10268,10.58334 1.13393,-13.41816 0.18899,-2.07886 z"
+       d="m 148.7012,98.413131 2.26786,14.741069 -4.7247,-11.33929 -1.13393,11.33929 -2.64583,-10.58334 -5.10268,10.58334 1.13393,-13.418159 0.18899,-2.07886 z"
        id="path848"
        inkscape:connector-curvature="0" />
     <rect
        style="fill:#f2f2f2;fill-opacity:0.92424245;stroke:#000000;stroke-width:0.46499997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ARMOR_RA"
-       width="15.497024"
-       height="62.36607"
+       width="16.275904"
+       height="53.541286"
        x="135.69345"
        y="45.267857"
        inkscape:label="#rect842" />
     <rect
        style="fill:#f2f2f2;fill-opacity:0.92424245;stroke:#000000;stroke-width:0.46499997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ARMOR_LL"
-       width="18.898809"
-       height="48.75893"
-       x="77.863091"
-       y="108.38988"
+       width="18.709824"
+       height="38.364582"
+       x="80.001244"
+       y="94.491859"
        inkscape:label="#rect844" />
     <rect
        style="fill:#f2f2f2;fill-opacity:0.92424245;stroke:#000000;stroke-width:0.46499997;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ARMOR_RL"
-       width="16.819941"
-       height="48.75893"
-       x="105.07738"
-       y="108.0119"
+       width="16.764585"
+       height="38.484779"
+       x="104.14194"
+       y="94.381157"
        inkscape:label="#rect846" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 100.0692,15.974702 c 0,0 4.53571,-14.5520834 8.88243,-15.11904771"
+       d="m 101.40555,25.73004 c 0,0 4.53571,-14.552084 8.88243,-15.119048"
        id="path852"
        inkscape:connector-curvature="0" />
     <circle
        style="fill:#ed0000;fill-opacity:1;stroke:none;stroke-width:0.26499999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path854"
-       cx="110.27455"
-       cy="0.38318405"
+       cx="111.6109"
+       cy="10.138522"
        r="2.0788691" />
     <rect
        style="fill:#f2f2f2;fill-opacity:1;stroke:#000000;stroke-width:0.465;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ARMOR_LT"
-       width="15.119046"
-       height="61.043156"
+       width="14.718144"
+       height="47.412411"
        x="74.606789"
        y="47.201252"
        inkscape:label="#rect4561" />
     <rect
        style="fill:#f2f2f2;fill-opacity:1;stroke:#000000;stroke-width:0.465;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="ARMOR_RT"
-       width="14.74107"
-       height="61.043152"
+       width="15.308038"
+       height="47.624996"
        x="114.29428"
        y="47.012268"
        inkscape:label="#rect4563" />

@@ -41,7 +41,7 @@ std::pair<Component, std::optional<Weapon>> parseComponent(std::string name)
   }
   else if (name == "heat sink")
   {
-    result.heat_removed = heat{ 1 };
+    result.heatRemoved = heat{ 1 };
     result.name = "HEATSINK";
   }
   else if (specialFromName(name).has_value())

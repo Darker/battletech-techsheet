@@ -123,6 +123,10 @@ struct Mech
   {
     return make_filtered(components, &pred::is_usable);
   }
+  auto workingComponents() const
+  {
+    return make_filtered(components, &pred::is_usable);
+  }
   auto validHeatsinks() const
   {
     return make_filtered(components, &pred::is_heatsink, &pred::is_usable);
@@ -215,7 +219,7 @@ struct Mech
     heat power = internalHeatSinks;
     for (const auto& comp : validHeatsinks())
     {
-      power += comp.heat_removed;
+      power += comp.heatRemoved;
     }
     return power;
   }
@@ -224,6 +228,16 @@ struct Mech
   {
     heat power = heatSinkCount();
     return doubleHeatSinks ? heat::forced_cast(2 * power.value) : power;
+  }
+
+  jump_power totalJumpPower() const
+  {
+    jump_power res{ 0 };
+    for (const auto& cmp : workingComponents())
+    {
+      res += cmp.jump;
+    }
+    return res;
   }
 
   DamageResult processDamage(IncomingDamage dmg)
@@ -301,24 +315,24 @@ struct Mech
       byte viableTargets = 0;
       for (auto& comp : componentsAt(segment))
       {
-        if (comp.isHealthy())
+        viableTargets++;
+        if (comp.locations.isHit(critPos))
         {
-          viableTargets++;
-          if (comp.locations.isHit(critPos))
+          if (execute)
           {
-            if (execute)
+            if(comp.isHealthy())
               comp.status = Component::Status::LAST_TURN;
-
-            CritRollResult result;
-            result.destroyedCmp = comp.id;
-            if (comp.isSpecial())
-            {
-              result.specialHit = comp.specType;
-              if (execute)
-                comp.specialHits++;
-            }
-            return result;
           }
+
+          CritRollResult result;
+          result.destroyedCmp = comp.id;
+          if (comp.isSpecial())
+          {
+            result.specialHit = comp.specType;
+            if (execute)
+              comp.specialHits++;
+          }
+          return result;
         }
       }
       // if viable targets were available and none were found, roll again
@@ -343,15 +357,31 @@ struct Mech
     }
   }
   
-  std::vector<CritRollOption> getCritOptions(Internal segment) const
+  std::vector<CritRollOption> getCritOptions(Internal segment, bool autoTransfer = false) const
   {
     std::vector<CritRollOption> result;
     result.reserve(6);
-    for (const auto& c : componentsAt(segment))
+
+    do
     {
-      if(c.isHealthy())
-        result.push_back({ c.locations, c.id });
-    }
+
+      for (const auto& c : componentsAt(segment))
+      {
+        result.push_back({ c.locations, c.id, !c.isHealthy()});
+      }
+      if (result.empty())
+      {
+        auto next = nextSegment(segment);
+        if (next.has_value())
+        {
+          segment = next.value();
+        }
+        else
+        {
+          break;
+        }
+      }
+    } while (autoTransfer && result.empty());
     return result;
   }
 
@@ -371,12 +401,12 @@ struct Mech
   }
 
   /*
-  * Cools down the mech 
+  * Cools down the mech, returns how much heat was removed.
   */
   heat reduceHeat()
   {
     heat orig = currentHeat;
-    currentHeat -= heatSinkPower();
+    currentHeat = currentHeat.substract_clamp(heatSinkPower());
     return orig - currentHeat;
   }
 private:

@@ -41,6 +41,10 @@ struct Component
   {
     return status == Status::DESTROYED;
   }
+  constexpr bool isUsable() const
+  {
+    return !isDestroyed();
+  }
   constexpr bool isSpecial() const
   {
     return specType != SpecialComponent::NOT_SPECIAL && specType != SpecialComponent::NO_SPECIAL_TYPES;
@@ -55,7 +59,7 @@ struct Component
   }
   constexpr bool isHeatsink() const
   {
-    return heat_removed > 0;
+    return heatRemoved > 0;
   }
   constexpr bool isAmmo() const
   {
@@ -93,7 +97,7 @@ struct Component
 #pragma endregion
 
 #pragma region heatsink
-  heat heat_removed{ 0 };
+  heat heatRemoved{ 0 };
 #pragma endregion
 
 #pragma region jump_jet

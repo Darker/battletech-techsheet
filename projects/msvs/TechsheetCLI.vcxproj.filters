@@ -24,6 +24,9 @@
     <ClCompile Include="..\..\src\CLI\WebMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\CLI\string_descriptions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\CLI\string_tools.h">
@@ -40,6 +43,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\CLI\web\number_ish_wrapper.h">
       <Filter>Header Files\web</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\CLI\web\component_util.h">
+      <Filter>Header Files\web</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\CLI\web\DamageResult_wrapper.h">
+      <Filter>Header Files\web</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\CLI\string_descriptions.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -16,9 +16,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\CLI\CLIMain.cpp" />
+    <ClCompile Include="..\..\src\CLI\string_descriptions.cpp" />
     <ClCompile Include="..\..\src\CLI\WebMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\CLI\string_descriptions.h" />
+    <ClInclude Include="..\..\src\CLI\web\component_util.h" />
+    <ClInclude Include="..\..\src\CLI\web\DamageResult_wrapper.h" />
     <ClInclude Include="..\..\src\CLI\web\number_ish_wrapper.h" />
     <ClInclude Include="..\..\src\CLI\web\optional_wrapper.h" />
     <ClInclude Include="..\..\src\CLI\emscripten_polyfill.h" />

@@ -1,0 +1,18 @@
+body.pending-crit section#crit {
+  border: 2px solid red;
+}
+
+
+body.pending-crit .select-section div.select-crit {
+  color: white;
+  font-weight: bold;
+  background-color: rgb(145, 0, 0);
+}
+
+td.crit-name
+{
+
+}
+td.crit-name.destroyed {
+  text-decoration: line-through;
+}
